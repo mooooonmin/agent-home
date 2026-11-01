@@ -17,16 +17,18 @@ claude-home/
 │  │  ├─ git.md                  # 커밋·PR
 │  │  ├─ translation.md          # 번역 (.md, .ipynb 작업 때만)
 │  │  └─ lang/                   # java, python, typescript, dart, go (해당 언어 작업 때만)
-│  └─ commands/                  # /translate-chapter, /review-translation, /research, /update-docs
+│  └─ commands/                  # /new-project, /update-docs, /research, /translate-chapter, /review-translation
 ├─ glossary/                     # *-ko 저장소에서 모은 분야별 용어집
 ├─ templates/
 │  ├─ CLAUDE.project.md          # 각 프로젝트에 복사할 짧은 CLAUDE.md
 │  ├─ pr-body.md
 │  ├─ lint/                      # 언어별 린트·포맷·계층 검사 설정, .editorconfig, .gitattributes, .gitignore
 │  ├─ docs/                      # README, 폴더 README, CHANGELOG, ADR, 실행 계획·개선 목록 템플릿
-│  ├─ ci/                        # 저장소 규칙·문서 링크 검사 스크립트, 그 테스트, GitHub Actions
+│  ├─ ci/                        # 저장소 검사 스크립트와 테스트, GitHub Actions (공통 + lang/ 언어별 빌드·테스트)
 │  └─ translation-repo/          # 새 번역 저장소용 README·NOTICE·TRANSLATION.md
-├─ scripts/sync-local.ps1        # 규칙·명령어를 ~/.claude/로 복사
+├─ scripts/
+│  ├─ new-project.ps1            # 규칙·검사·문서 틀을 깐 새 프로젝트 만들기
+│  └─ sync-local.ps1             # 규칙·명령어를 ~/.claude/로 복사
 └─ notes/                        # 조사·초안 결과물
 ```
 
@@ -39,7 +41,28 @@ claude-home/
 - `/research <주제>`: 조사해서 `notes/`에 정리
 - 번역·코딩 작업은 아래처럼 그 저장소로 세션을 엽니다.
 
-### 다른 프로젝트에서 쓰기
+### 새 프로젝트 시작하기
+
+이 저장소에서 Claude Code를 열고 명령어 하나로 시작합니다.
+
+```
+/new-project my-app python 할 일 목록 CLI
+```
+
+Claude가 다음 순서로 진행합니다.
+
+1. `scripts/new-project.ps1`로 새 폴더에 규칙, 린트 설정, `.gitignore`, 검사 스크립트, CI(공통 + 언어별), README·CLAUDE.md·CHANGELOG, ADR 템플릿, 첫 실행 계획을 깔고 `git init` 합니다.
+2. 언어 공식 도구(Spring Initializr, `uv init`, Vite, `flutter create`, `go mod init`)로 뼈대를 만듭니다. 이미 깐 파일은 덮어쓰지 않습니다.
+3. 첫 실행 계획(`docs/exec-plans/active/0001-initial-setup.md`)을 따라 ADR, README, CLAUDE.md를 채우고 첫 기능과 테스트를 만듭니다.
+4. 로컬 검사가 모두 통과하면 첫 커밋을 하고, 확인을 받은 뒤 GitHub에 올려 CI를 확인합니다.
+
+스크립트만 따로 쓸 수도 있습니다. `-WhatIf`를 붙이면 만들 파일만 보여 줍니다.
+
+```bash
+pwsh -File scripts/new-project.ps1 -Name my-app -Language python -Description "할 일 목록 CLI" -WhatIf
+```
+
+### 기존 프로젝트에 적용하기
 
 클라우드 세션은 **고른 저장소 하나만** 봅니다. 그래서 프로젝트 저장소에도 규칙이 있어야 합니다.
 

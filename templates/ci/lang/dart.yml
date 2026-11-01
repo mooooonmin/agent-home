@@ -1,0 +1,31 @@
+# .github/workflows/dart.yml로 복사합니다. Flutter 프로젝트 기준입니다.
+name: dart
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dart-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: 포맷 검사
+        run: dart format --output=none --set-exit-if-changed .
+      - name: 린트
+        run: flutter analyze
+      - name: 테스트
+        run: flutter test

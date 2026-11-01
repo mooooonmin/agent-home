@@ -39,7 +39,7 @@
 
 ## 문서 구성
 
-새 프로젝트는 다음 구성으로 시작합니다. 템플릿: `templates/docs/`
+새 프로젝트는 다음 구성으로 시작합니다. claude-home의 `/new-project`(`scripts/new-project.ps1`)가 이 구성을 만들어 줍니다. 템플릿: `templates/docs/`
 
 - `README.md`: 무엇인지, 시작하기(설치·실행·테스트 명령), 구조, 문서 링크
 - `CLAUDE.md`: 작업별로 먼저 읽을 문서, 빌드·테스트 명령, 이 저장소만의 규칙. 템플릿: `templates/CLAUDE.project.md`

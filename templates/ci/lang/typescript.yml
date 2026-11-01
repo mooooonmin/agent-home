@@ -1,0 +1,33 @@
+# .github/workflows/typescript.yml로 복사합니다. package-lock.json이 있어야 합니다.
+name: typescript
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: typescript-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: 포맷 검사
+        run: npx prettier --check .
+      - name: 린트
+        run: npx eslint .
+      - name: 타입 검사
+        run: npx tsc --noEmit
+      - name: 테스트
+        run: npm test --if-present
