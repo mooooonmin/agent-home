@@ -23,7 +23,7 @@ claude-home/
 │  ├─ CLAUDE.project.md          # 각 프로젝트에 복사할 짧은 CLAUDE.md
 │  ├─ pr-body.md
 │  ├─ lint/                      # 언어별 린트·포맷 설정, .editorconfig, .gitattributes
-│  ├─ docs/                      # README, CHANGELOG, ADR 템플릿
+│  ├─ docs/                      # README, CHANGELOG, ADR, 실행 계획·개선 목록 템플릿
 │  ├─ ci/                        # 문서 링크 검사 스크립트와 GitHub Actions
 │  └─ translation-repo/          # 새 번역 저장소용 README·NOTICE·TRANSLATION.md
 ├─ scripts/sync-local.ps1        # 규칙·명령어를 ~/.claude/로 복사
