@@ -3,6 +3,9 @@
 내 Claude Code 공통 규칙·명령어·용어집·템플릿을 모아 둔 **비공개** 저장소입니다.
 클라우드 세션을 시작할 때 이 저장소를 고르면 PC에서 쓰던 규칙 그대로 작업을 맡길 수 있습니다.
 
+> [!TIP]
+> 처음이거나 새 PC라면 [초기 설정](docs/setup.md)부터 따라 하세요. 필요한 도구, 받는 위치, 로컬 동기화, 클라우드 설정, 문제 해결이 순서대로 있습니다.
+
 ## 구조
 
 ```
@@ -18,6 +21,7 @@ claude-home/
 │  │  ├─ translation.md          # 번역 (.md, .ipynb 작업 때만)
 │  │  └─ lang/                   # java, python, typescript, dart, go (해당 언어 작업 때만)
 │  └─ commands/                  # /new-project, /update-docs, /research, /translate-chapter, /review-translation
+├─ docs/setup.md                 # 초기 설정 안내
 ├─ glossary/                     # *-ko 저장소에서 모은 분야별 용어집
 ├─ templates/
 │  ├─ CLAUDE.project.md          # 각 프로젝트에 복사할 짧은 CLAUDE.md
