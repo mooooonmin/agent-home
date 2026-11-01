@@ -1,0 +1,26 @@
+# 프로젝트의 .github/workflows/checks.yml로 복사합니다.
+# 같은 폴더의 repo_checks.py, check_doc_links.py, test_checks.py는 scripts/로 복사합니다.
+# 푸시와 PR마다 저장소 규칙(생성물·버전 고정·latest 태그·충돌 표시·셸 문법·문서 링크)을 검사합니다.
+name: checks
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repository:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 검사 도구 자체 테스트
+        run: python3 -I -m unittest discover -s scripts -p "test_checks.py"
+      - name: 저장소 규칙 검사
+        run: python3 -I scripts/repo_checks.py

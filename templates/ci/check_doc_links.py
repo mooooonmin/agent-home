@@ -7,7 +7,7 @@
 외부 URL은 검사하지 않습니다(네트워크 없이 항상 같은 결과). 코드 블록과 인라인 코드 안은 건너뜁니다.
 표준 라이브러리만 씁니다.
 
-실행:  python3 -I check-doc-links.py [--exclude 폴더 ...]
+실행:  python3 -I scripts/check_doc_links.py [--exclude 폴더 ...]
 깨진 참조가 있으면 종료 코드 1로 끝납니다.
 """
 import argparse
@@ -15,6 +15,7 @@ import os
 import re
 import subprocess
 import sys
+import unicodedata
 from urllib.parse import unquote
 
 LINK = re.compile(r"!?\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+\"[^\"]*\")?\s*\)")
@@ -61,8 +62,20 @@ def slugify(title):
     title = re.sub(r"<[^>]+>", "", title)  # HTML 태그
     title = title.replace("`", "").replace("*", "")
     title = title.strip().lower()
-    title = re.sub(r"[^\w\- ]", "", title)
+    # GitHub처럼 문자(L)·결합 문자(M, 이모지 변형 선택자 포함)·숫자(N)·밑줄류(Pc)·하이픈·공백만 남깁니다.
+    title = "".join(
+        ch for ch in title if ch in "- " or unicodedata.category(ch)[0] in "LMN" or unicodedata.category(ch) == "Pc"
+    )
     return title.replace(" ", "-")
+
+
+def read_text(path):
+    """UTF-8(BOM 허용)로 읽습니다. 다른 인코딩이면 None을 돌려줍니다."""
+    try:
+        with open(path, encoding="utf-8-sig") as f:
+            return f.read()
+    except UnicodeDecodeError:
+        return None
 
 
 _anchor_cache = {}
@@ -71,8 +84,7 @@ _anchor_cache = {}
 def anchors_of(path):
     if path not in _anchor_cache:
         seen, result = {}, set()
-        with open(path, encoding="utf-8") as f:
-            text = f.read()
+        text = read_text(path) or ""
         for _, line in lines_outside_code(text):
             m = HEADING.match(line)
             if m:
@@ -88,8 +100,9 @@ def anchors_of(path):
 def check(root, rel):
     errors = []
     path = os.path.join(root, rel)
-    with open(path, encoding="utf-8") as f:
-        text = f.read()
+    text = read_text(path)
+    if text is None:
+        return [f"{rel}: UTF-8 문서가 아니라 검사하지 못했습니다 (UTF-8로 저장하세요)"]
     for no, line in lines_outside_code(text):
         line = INLINE_CODE.sub("", line)
         for target in LINK.findall(line) + IMG_TAG.findall(line):

@@ -1,0 +1,39 @@
+# 공통 .gitignore 항목입니다. 언어별 항목(https://github.com/github/gitignore)과 합쳐 씁니다.
+
+# 비밀값 (.env.example은 커밋합니다)
+.env
+.env.*
+!.env.example
+secrets/
+
+# 개인 로컬 설정
+.claude/settings.local.json
+.claude/worktrees/
+CLAUDE.local.md
+
+# 도구·AI 출력과 실행 결과 (저장소 밖이나 CI 아티팩트에 보관)
+/Claude outputs/
+/outputs/
+/tmp/
+/logs/
+/test-results/
+/coverage/
+*.log
+
+# 의존성·캐시
+node_modules/
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.gradle/
+build/
+dist/
+
+# OS·편집기
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

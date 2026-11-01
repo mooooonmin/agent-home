@@ -22,6 +22,10 @@ paths:
 - 출력은 `print` 대신 `logging`을 씁니다(일회성 스크립트 제외).
 - 스크립트 진입점은 `if __name__ == "__main__":` 아래에 둡니다.
 
+## 구조
+
+- 계층이 있는 프로젝트는 import-linter로 의존 방향을 강제합니다. 템플릿: `templates/lint/python/importlinter.toml`
+
 ## 환경과 의존성
 
 - 프로젝트마다 가상환경을 씁니다(`uv` 또는 `python -m venv .venv`). `.venv/`는 커밋하지 않습니다.

@@ -24,6 +24,7 @@ paths:
 - 계층: `controller`(HTTP 입출력·검증) → `service`(비즈니스 로직·트랜잭션) → `repository`(DB). 컨트롤러에 로직을, 엔티티에 HTTP 개념을 넣지 않습니다.
 - 엔티티를 API 응답으로 바로 내보내지 않고 DTO(`record`)로 바꿉니다.
 - 요청 검증은 `@Valid` + Bean Validation 애너테이션으로 하고, 예외는 `@RestControllerAdvice`에서 한곳에서 처리합니다.
+- 계층 방향은 ArchUnit 테스트로 강제합니다. 템플릿: `templates/lint/java/ArchitectureTest.java`
 - `@Transactional`은 서비스 계층에 둡니다. 조회 전용은 `@Transactional(readOnly = true)`.
 - JPA: 연관관계는 기본 `LAZY`, N+1이 생기면 fetch join이나 `@EntityGraph`로 풉니다. 엔티티에 `@Setter`와 `@Data`를 붙이지 않습니다.
 - 설정값은 `application.yml` + `@ConfigurationProperties`로 받고, 비밀값은 환경 변수로 넣습니다.

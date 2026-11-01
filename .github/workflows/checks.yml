@@ -1,0 +1,25 @@
+# 이 저장소 자체의 검사. 다른 프로젝트용 템플릿은 templates/ci/에 있습니다.
+# templates/ 아래는 자리표시 링크가 많아 문서 링크 검사에서만 뺍니다.
+name: checks
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repository:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 검사 도구 자체 테스트
+        run: python3 -I -m unittest discover -s templates/ci -p "test_*.py"
+      - name: 저장소 규칙 검사
+        run: python3 -I templates/ci/repo_checks.py --docs-exclude templates

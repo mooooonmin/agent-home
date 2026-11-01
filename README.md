@@ -22,9 +22,9 @@ claude-home/
 ├─ templates/
 │  ├─ CLAUDE.project.md          # 각 프로젝트에 복사할 짧은 CLAUDE.md
 │  ├─ pr-body.md
-│  ├─ lint/                      # 언어별 린트·포맷 설정, .editorconfig, .gitattributes
-│  ├─ docs/                      # README, CHANGELOG, ADR, 실행 계획·개선 목록 템플릿
-│  ├─ ci/                        # 문서 링크 검사 스크립트와 GitHub Actions
+│  ├─ lint/                      # 언어별 린트·포맷·계층 검사 설정, .editorconfig, .gitattributes, .gitignore
+│  ├─ docs/                      # README, 폴더 README, CHANGELOG, ADR, 실행 계획·개선 목록 템플릿
+│  ├─ ci/                        # 저장소 규칙·문서 링크 검사 스크립트, 그 테스트, GitHub Actions
 │  └─ translation-repo/          # 새 번역 저장소용 README·NOTICE·TRANSLATION.md
 ├─ scripts/sync-local.ps1        # 규칙·명령어를 ~/.claude/로 복사
 └─ notes/                        # 조사·초안 결과물
@@ -45,7 +45,7 @@ claude-home/
 
 1. `.claude/rules/`에서 필요한 파일을 프로젝트의 `.claude/rules/`로 복사합니다. 보통 `basics.md`, `coding.md`, `docs.md`, `git.md`와 그 프로젝트 언어의 `lang/*.md`면 됩니다.
 2. `templates/CLAUDE.project.md`를 프로젝트 루트에 `CLAUDE.md`로 복사하고 빌드·테스트 명령을 채웁니다.
-3. 언어에 맞는 `templates/lint/` 설정과 `templates/ci/`의 문서 검사를 넣습니다.
+3. 언어에 맞는 `templates/lint/` 설정과 `templates/ci/`의 저장소 검사를 넣습니다.
 4. 필요한 명령어(`/update-docs`, `/translate-chapter` 등)를 프로젝트의 `.claude/commands/`로 복사합니다.
 5. 저장소에 `AGENTS.md`가 있으면 `CLAUDE.md` 맨 아래에 `@AGENTS.md`를 넣어 같은 규칙을 함께 씁니다.
 

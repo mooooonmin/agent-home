@@ -1,0 +1,19 @@
+# pyproject.toml에 붙여 넣습니다. 설치: pip install import-linter / 실행: lint-imports
+# 계층은 위에서 아래로만 참조할 수 있습니다(web → service → domain).
+[tool.importlinter]
+root_package = "myapp"
+
+[[tool.importlinter.contracts]]
+name = "계층 방향"
+type = "layers"
+layers = [
+    "myapp.web",
+    "myapp.service",
+    "myapp.domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "도메인은 외부 라이브러리에 직접 의존하지 않는다"
+type = "forbidden"
+source_modules = ["myapp.domain"]
+forbidden_modules = ["requests", "sqlalchemy", "fastapi"]
