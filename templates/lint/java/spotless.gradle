@@ -1,0 +1,17 @@
+// build.gradle에 붙여 넣습니다. 버전은 붙여 넣을 때 최신으로 확인하세요.
+// plugins 블록에 추가:
+//     id 'com.diffplug.spotless' version '7.0.2'
+
+spotless {
+    java {
+        target 'src/**/*.java'
+        targetExclude 'src/main/generated/**'   // QueryDSL Q클래스 등 자동 생성 코드
+        googleJavaFormat().aosp()               // Google 스타일 + 4칸 들여쓰기
+        removeUnusedImports()
+        importOrder()
+    }
+}
+
+// 사용법:
+//   ./gradlew spotlessApply   포맷 적용
+//   ./gradlew spotlessCheck   검사만 (CI용, build 시 자동 실행)

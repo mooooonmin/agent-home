@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/*.md"
+  - "**/*.ipynb"
+---
+
 # 번역 규칙
 
 `*-ko` 저장소(clean-code-javascript-ko, system-design-notes-ko, Hands-On-Large-Language-Models-ko 등)에서 공통으로 지키는 원칙입니다. 저장소에 `TRANSLATION.md`가 있으면 **그 파일이 우선**합니다.

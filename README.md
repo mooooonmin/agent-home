@@ -7,19 +7,27 @@
 
 ```
 claude-home/
-├─ CLAUDE.md                 # 공통 규칙 (세션마다 자동으로 읽힘)
-├─ rules/
-│  ├─ translation.md         # 번역 원칙
-│  └─ git.md                 # 커밋·PR 규칙
+├─ CLAUDE.md                     # 이 저장소 안내 (규칙 목록)
 ├─ .claude/
-│  ├─ settings.json          # 권한 (비밀값 파일 읽기 금지)
-│  └─ commands/              # /translate-chapter, /review-translation, /research
-├─ glossary/                 # *-ko 저장소에서 모은 분야별 용어집
+│  ├─ settings.json              # 권한 (비밀값 파일 읽기 금지)
+│  ├─ rules/                     # 자동으로 읽히는 규칙
+│  │  ├─ basics.md               # 소통, 작업 방식, 비밀값
+│  │  ├─ coding.md               # 코딩 스타일, 설계 원칙
+│  │  ├─ docs.md                 # 문서 최신화 규칙
+│  │  ├─ git.md                  # 커밋·PR
+│  │  ├─ translation.md          # 번역 (.md, .ipynb 작업 때만)
+│  │  └─ lang/                   # java, python, typescript, dart, go (해당 언어 작업 때만)
+│  └─ commands/                  # /translate-chapter, /review-translation, /research, /update-docs
+├─ glossary/                     # *-ko 저장소에서 모은 분야별 용어집
 ├─ templates/
-│  ├─ CLAUDE.project.md      # 각 프로젝트에 복사할 짧은 CLAUDE.md
+│  ├─ CLAUDE.project.md          # 각 프로젝트에 복사할 짧은 CLAUDE.md
 │  ├─ pr-body.md
-│  └─ translation-repo/      # 새 번역 저장소용 README·NOTICE·TRANSLATION.md
-└─ notes/                    # 조사·초안 결과물
+│  ├─ lint/                      # 언어별 린트·포맷 설정, .editorconfig, .gitattributes
+│  ├─ docs/                      # README, CHANGELOG, ADR 템플릿
+│  ├─ ci/                        # 문서 링크 검사 스크립트와 GitHub Actions
+│  └─ translation-repo/          # 새 번역 저장소용 README·NOTICE·TRANSLATION.md
+├─ scripts/sync-local.ps1        # 규칙·명령어를 ~/.claude/로 복사
+└─ notes/                        # 조사·초안 결과물
 ```
 
 ## 쓰는 법
@@ -29,24 +37,26 @@ claude-home/
 클라우드 세션을 이 저장소로 열고 명령어를 씁니다.
 
 - `/research <주제>`: 조사해서 `notes/`에 정리
-- 번역 저장소 작업은 아래처럼 그 저장소로 세션을 엽니다.
+- 번역·코딩 작업은 아래처럼 그 저장소로 세션을 엽니다.
 
 ### 다른 프로젝트에서 쓰기
 
 클라우드 세션은 **고른 저장소 하나만** 봅니다. 그래서 프로젝트 저장소에도 규칙이 있어야 합니다.
 
-1. `templates/CLAUDE.project.md`를 프로젝트 루트에 `CLAUDE.md`로 복사하고 채웁니다.
-2. 번역 명령어가 필요하면 `.claude/commands/`를 프로젝트의 `.claude/commands/`로 복사합니다.
-3. 저장소에 `AGENTS.md`가 있으면 `CLAUDE.md` 맨 아래에 `@AGENTS.md`를 넣어 같은 규칙을 함께 씁니다.
+1. `.claude/rules/`에서 필요한 파일을 프로젝트의 `.claude/rules/`로 복사합니다. 보통 `basics.md`, `coding.md`, `docs.md`, `git.md`와 그 프로젝트 언어의 `lang/*.md`면 됩니다.
+2. `templates/CLAUDE.project.md`를 프로젝트 루트에 `CLAUDE.md`로 복사하고 빌드·테스트 명령을 채웁니다.
+3. 언어에 맞는 `templates/lint/` 설정과 `templates/ci/`의 문서 검사를 넣습니다.
+4. 필요한 명령어(`/update-docs`, `/translate-chapter` 등)를 프로젝트의 `.claude/commands/`로 복사합니다.
+5. 저장소에 `AGENTS.md`가 있으면 `CLAUDE.md` 맨 아래에 `@AGENTS.md`를 넣어 같은 규칙을 함께 씁니다.
 
 이 저장소가 규칙의 **원본**입니다. 규칙을 고칠 땐 여기서 고친 뒤 프로젝트로 복사합니다.
 
 ### 로컬 PC에서도 같은 규칙 쓰기
 
-이 저장소의 `CLAUDE.md`를 `~/.claude/CLAUDE.md`에서 불러오면 모든 로컬 세션에 적용됩니다.
+`~/.claude/rules/`와 `~/.claude/commands/`에 넣은 파일은 이 PC의 모든 프로젝트에 적용됩니다. 규칙을 고친 뒤 다음을 실행합니다.
 
-```
-@C:/00.PROJECT/claude-home/CLAUDE.md
+```bash
+pwsh -File scripts/sync-local.ps1
 ```
 
 ## 비밀값

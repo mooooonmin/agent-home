@@ -1,0 +1,10 @@
+{
+  "//": "기존 tsconfig.json의 compilerOptions에 아래 항목을 합칩니다.",
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}

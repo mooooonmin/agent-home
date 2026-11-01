@@ -1,0 +1,25 @@
+# 모든 프로젝트 루트에 복사합니다. 편집기가 들여쓰기·줄바꿈을 맞춰 줍니다.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+[*.{java,py,gradle}]
+indent_size = 4
+
+[*.go]
+indent_style = tab
+
+[{Makefile,*.mk}]
+indent_style = tab
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.{bat,cmd,ps1}]
+end_of_line = crlf
