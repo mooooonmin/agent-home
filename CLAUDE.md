@@ -22,4 +22,5 @@
 - 다른 저장소에 속하지 않는 결과물(조사, 초안, 메모)은 `notes/`에 `YYYY-MM-DD-주제.md`로 저장합니다.
 - 규칙 파일을 고치면 `README.md`의 구조 설명과 위 표도 함께 고칩니다.
 - `templates/` 아래 파일은 자리표시(`<...>`)가 들어간 원본입니다. 실제 값으로 채우지 않습니다.
-- 커밋 전에 문서 링크를 검사합니다: `python -I templates/ci/check-doc-links.py --exclude templates`
+- 커밋 전에 저장소를 검사합니다: `python -I templates/ci/repo_checks.py --docs-exclude templates`
+- 검사 도구를 고쳤으면 테스트도 돌립니다: `python -I -m unittest discover -s templates/ci -p "test_*.py"`

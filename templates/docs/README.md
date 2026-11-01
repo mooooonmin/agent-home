@@ -27,4 +27,5 @@
 ## 문서
 
 - 설계 결정: [docs/adr/](docs/adr/)
+- 실행 계획과 개선 후보: [docs/exec-plans/](docs/exec-plans/README.md) (있을 때만)
 - 변경 이력: [CHANGELOG.md](CHANGELOG.md)
