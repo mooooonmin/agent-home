@@ -1,0 +1,30 @@
+# .github/workflows/java.yml로 복사합니다. Gradle Wrapper(gradlew)가 있어야 합니다.
+# build는 컴파일, 테스트(ArchUnit 포함), Spotless 검사(플러그인을 넣었다면)를 함께 돌립니다.
+name: java
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: java-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+      - name: 빌드·테스트·포맷 검사
+        run: |
+          chmod +x gradlew
+          ./gradlew build

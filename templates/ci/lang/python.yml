@@ -1,0 +1,37 @@
+# .github/workflows/python.yml로 복사합니다.
+# 개발 의존성은 requirements-dev.txt에 ==로 고정해 두면 그대로 설치합니다.
+name: python
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: python-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: 의존성 설치
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; else pip install ruff pytest; fi
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: 포맷 검사
+        run: ruff format --check .
+      - name: 린트
+        run: ruff check .
+      - name: 테스트
+        # 테스트가 아직 없으면(종료 코드 5) 통과로 봅니다.
+        run: pytest || [ $? -eq 5 ]
