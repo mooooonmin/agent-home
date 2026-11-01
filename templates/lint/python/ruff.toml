@@ -1,0 +1,22 @@
+# 프로젝트 루트에 ruff.toml로 복사합니다(또는 pyproject.toml의 [tool.ruff]로 옮깁니다).
+line-length = 100
+target-version = "py311"
+
+[lint]
+select = [
+  "E", "W",   # pycodestyle
+  "F",        # pyflakes
+  "I",        # import 정렬
+  "N",        # 이름 규칙
+  "UP",       # 최신 문법으로
+  "B",        # 흔한 버그
+  "SIM",      # 단순화
+  "PTH",      # os.path 대신 pathlib
+  "RUF",
+]
+
+[lint.per-file-ignores]
+"*.ipynb" = ["E402"]   # 노트북 셀 중간 import 허용
+
+[format]
+quote-style = "double"

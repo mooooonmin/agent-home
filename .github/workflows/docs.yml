@@ -1,0 +1,23 @@
+# 이 저장소 자체의 문서 링크 검사. 다른 프로젝트용 템플릿은 templates/ci/에 있습니다.
+# templates/ 아래는 자리표시 링크가 많아 검사에서 뺍니다.
+name: docs
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 문서 내부 링크·이미지·앵커 검사
+        run: python3 -I templates/ci/check-doc-links.py --exclude templates

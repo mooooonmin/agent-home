@@ -8,7 +8,7 @@
 <type>(<scope>): <한국어 설명>
 ```
 
-- type: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `build`
+- type: `feat`, `fix`, `docs`, `style`(포맷만 변경), `refactor`, `test`, `chore`, `build`, `ci`
 - 번역 저장소는 `docs(ko)`를 씁니다.
   - 예: `docs(ko): 9장 오류 처리 번역`
   - 예: `docs(ko): README를 장별 목차로 작성`
