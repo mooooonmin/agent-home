@@ -17,12 +17,20 @@ claude-home 기준으로 새 프로젝트를 만들고 체계적으로 시작합
 
 스크립트는 claude-home 저장소 안에 있습니다. 현재 폴더에 `scripts/new-project.ps1`이 없으면 claude-home 위치를 묻고 그 경로의 스크립트를 씁니다(로컬 PC 기준 보통 `C:\00.PROJECT\claude-home`).
 
-1. 미리보기로 만들 파일을 확인합니다.
+1. claude-home을 최신으로 받습니다. 스크립트는 GitHub이 아니라 이 PC의 claude-home 폴더에서 파일을 복사하기 때문입니다.
+   ```bash
+   git -C <claude-home 경로> status --short --branch
+   ```
+   `main`이고 커밋하지 않은 변경이 없으면 받습니다. 다른 브랜치이거나 변경이 있거나 받기에 실패하면, 사용자에게 알리고 그대로 진행할지 묻습니다.
+   ```bash
+   git -C <claude-home 경로> pull
+   ```
+2. 미리보기로 만들 파일을 확인합니다.
    ```bash
    pwsh -File scripts/new-project.ps1 -Name <이름> -Language <언어> -Description "<설명>" -WhatIf
    ```
-2. 사용자에게 위치(기본: claude-home 옆 폴더)와 파일 목록을 알리고, 그대로 `-WhatIf` 없이 실행합니다.
-3. 이후 작업은 새 폴더의 절대 경로에서 합니다.
+3. 사용자에게 위치(기본: claude-home 옆 폴더)와 파일 목록을 알리고, 그대로 `-WhatIf` 없이 실행합니다.
+4. 이후 작업은 새 폴더의 절대 경로에서 합니다.
 
 ## 3. 뼈대 만들기
 

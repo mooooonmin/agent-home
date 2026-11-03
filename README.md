@@ -47,7 +47,13 @@ claude-home/
 
 ### 새 프로젝트 시작하기
 
-이 저장소에서 Claude Code를 열고 명령어 하나로 시작합니다.
+**로컬 PC에서** 이 저장소를 열고 명령어 하나로 시작합니다. 클라우드에는 `pwsh`가 없어서 쓸 수 없습니다.
+
+먼저 최신 규칙을 받습니다. 스크립트는 GitHub이 아니라 이 PC에 받아 둔 claude-home 폴더의 파일을 복사합니다.
+
+```bash
+git -C C:/00.PROJECT/claude-home pull
+```
 
 ```
 /new-project my-app python 할 일 목록 CLI
@@ -65,6 +71,8 @@ Claude가 다음 순서로 진행합니다.
 ```bash
 pwsh -File scripts/new-project.ps1 -Name my-app -Language python -Description "할 일 목록 CLI" -WhatIf
 ```
+
+새 프로젝트의 규칙은 만들 때 복사한 **사본**입니다. 프로젝트에서 고친 규칙은 그 프로젝트에만 적용되고 claude-home은 바뀌지 않습니다. 원본을 고친 뒤 반영하는 법과 주의점은 [초기 설정의 규칙을 고친 뒤](docs/setup.md#규칙을-고친-뒤)를 봅니다.
 
 ### 기존 프로젝트에 적용하기
 
