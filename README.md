@@ -40,7 +40,7 @@ claude-home/
 
 ### 이 저장소에서 바로 맡기기
 
-클라우드 세션을 이 저장소로 열고 명령어를 씁니다.
+클라우드 세션을 이 저장소로 열고 명령어를 씁니다. 연결과 환경 설정은 [초기 설정의 클라우드 세션 설정](docs/setup.md#5-클라우드-세션-설정)을 봅니다.
 
 - `/research <주제>`: 조사해서 `notes/`에 정리
 - 번역·코딩 작업은 아래처럼 그 저장소로 세션을 엽니다.
@@ -68,7 +68,7 @@ pwsh -File scripts/new-project.ps1 -Name my-app -Language python -Description "�
 
 ### 기존 프로젝트에 적용하기
 
-클라우드 세션은 **고른 저장소 하나만** 봅니다. 그래서 프로젝트 저장소에도 규칙이 있어야 합니다.
+클라우드 세션에는 **세션에 넣은 저장소의 파일만** 있고 내 PC의 `~/.claude/`는 따라가지 않습니다. 그래서 프로젝트 저장소에도 규칙이 있어야 합니다.
 
 1. `.claude/rules/`에서 필요한 파일을 프로젝트의 `.claude/rules/`로 복사합니다. 보통 `basics.md`, `coding.md`, `docs.md`, `git.md`와 그 프로젝트 언어의 `lang/*.md`면 됩니다.
 2. `templates/CLAUDE.project.md`를 프로젝트 루트에 `CLAUDE.md`로 복사하고 빌드·테스트 명령을 채웁니다.
@@ -88,4 +88,4 @@ pwsh -File scripts/sync-local.ps1
 
 ## 비밀값
 
-API 키·토큰은 이 저장소에 넣지 않습니다. 클라우드 세션의 **환경 설정**에 환경 변수로 등록합니다. `.env`는 `.gitignore`에 들어 있습니다.
+API 키·토큰은 이 저장소에 넣지 않습니다. 클라우드에서는 환경 설정의 **Network secrets**에 넣습니다(환경 변수는 그 환경을 쓰는 사람이 모두 볼 수 있음). `.env`는 `.gitignore`에 들어 있습니다.
