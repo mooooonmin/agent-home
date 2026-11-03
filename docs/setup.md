@@ -79,16 +79,76 @@ pwsh -File C:/00.PROJECT/claude-home/scripts/sync-local.ps1
 
 ## 5. 클라우드 세션 설정
 
-클라우드 세션은 별도 가상 머신에서 돌아서 내 PC를 꺼도 계속 작업합니다. 대신 **세션을 시작할 때 고른 저장소 하나만** 보고, 내 PC의 `~/.claude/` 설정은 따라가지 않습니다. 그래서 규칙이 저장소 안에 있어야 합니다.
+클라우드 세션은 Anthropic의 가상 머신(Ubuntu)에서 돌아서 내 PC를 꺼도 계속 작업합니다. 세션에는 **세션에 넣은 저장소의 파일만** 있고, 내 PC의 `~/.claude/` 설정은 따라가지 않습니다. 그래서 규칙이 저장소 안에 있어야 합니다.
 
-1. [claude.ai/code](https://claude.ai/code)에서 GitHub 계정을 연결합니다.
-2. 세션을 시작할 때 저장소를 고릅니다.
-   - 조사·메모 같은 일반 작업: `claude-home` (결과는 `notes/`에 저장)
-   - 특정 프로젝트 작업: 그 프로젝트 저장소. 저장소에 `.claude/rules/`와 `CLAUDE.md`가 있어야 규칙이 적용됩니다. `/new-project`로 만든 프로젝트는 이미 들어 있습니다.
-3. API 키 같은 비밀값이 필요하면 저장소가 아니라 클라우드 세션의 **환경 설정**에 환경 변수로 등록합니다.
-4. 크레딧과 사용량은 Claude 설정의 사용량 화면에서 확인합니다.
+공식 안내: [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web), [클라우드 환경](https://code.claude.com/docs/en/cloud-environments). 화면 이름은 바뀔 수 있으니 막히면 이 문서를 확인합니다.
 
-화면 이름과 위치는 바뀔 수 있으니 막히면 [Claude Code 문서](https://code.claude.com/docs)를 확인합니다.
+### GitHub 연결 (처음 한 번)
+
+claude-home은 **비공개 저장소**라서 아래 둘 중 하나가 필요합니다. 연결하지 않으면 공개 저장소만 열 수 있습니다.
+
+- **브라우저**: [claude.ai/code](https://claude.ai/code)에 로그인해 GitHub 권한을 승인하고, [Claude GitHub App](https://github.com/apps/claude/installations/new)을 설치하면서 접근할 저장소에 `claude-home`(과 클라우드에서 쓸 프로젝트)을 넣습니다. PR Auto-fix도 이 앱이 있어야 동작합니다.
+- **터미널**: `gh auth login`이 된 상태에서 Claude Code를 열고 `/login` → `/web-setup`을 실행합니다. `gh`의 권한으로 비공개 저장소에 접근합니다.
+
+### 환경 (처음 한 번)
+
+입력창 아래 **환경 선택**에서 고릅니다. claude-home 작업은 **기본 환경 그대로** 쓰면 됩니다.
+
+| 항목 | claude-home 설정 | 설명 |
+|---|---|---|
+| Network access | Trusted (기본값) | GitHub, PyPI, npm, Maven 같은 패키지 저장소에 접근 가능 |
+| Setup script | 없음 | Python(pytest, ruff 포함), Node, Java 21, Go, `gh`가 미리 설치되어 있음 |
+| Environment variables | 없음 | 그 환경을 쓰는 사람이 모두 볼 수 있으므로 API 키는 넣지 않음 |
+| Network secrets | 필요할 때만 | API 키는 여기에 넣습니다. 지정한 호스트로 가는 요청에만 붙습니다 |
+
+Flutter/Dart, PowerShell(`pwsh`)은 **미리 설치되어 있지 않습니다**. Flutter 프로젝트를 클라우드에서 다루려면 그 프로젝트용 환경을 새로 만들고 Setup script에 설치 명령을 넣습니다.
+
+### 세션 시작
+
+입력창 아래 **저장소 선택**에서 저장소와 브랜치(`main`)를 고르고 할 일을 적습니다. 주소로 바로 열 수도 있습니다.
+
+```
+https://claude.ai/code?repositories=mooooonmin/claude-home&prompt=/research%20조사할%20주제
+```
+
+| 하려는 일 | 고를 저장소 |
+|---|---|
+| 조사·메모 (`/research`, 결과는 `notes/`) | `claude-home` |
+| 규칙·템플릿 고치기, `/update-docs` | `claude-home` |
+| 특정 프로젝트 작업 | 그 프로젝트 저장소. `.claude/rules/`와 `CLAUDE.md`가 있어야 규칙이 적용됩니다(`/new-project`로 만든 프로젝트에는 이미 있음) |
+
+저장소를 여러 개 함께 넣을 수도 있지만, 그때는 각 저장소의 `.claude/settings.json` 권한 규칙과 훅이 적용되지 않습니다. 보통은 저장소 하나로 엽니다.
+
+### 클라우드에서 적용되는 것
+
+| 적용됨 | 적용 안 됨 |
+|---|---|
+| 저장소의 `CLAUDE.md`, `.claude/rules/` (언어별 규칙 포함) | 내 PC의 `~/.claude/` (규칙, 명령어, 설정) |
+| `.claude/commands/` (`/research`, `/update-docs` 등) | `.claude/settings.local.json` |
+| `.claude/settings.json`의 권한 규칙과 훅 (저장소 하나일 때) | 플러그인, 내 PC에 추가한 MCP 서버 |
+
+### 클라우드에서 하지 않는 것
+
+- **`/new-project`**: `pwsh`가 없고, 세션은 넣은 저장소 밖에 새 저장소를 만들지 않습니다. 새 프로젝트는 로컬에서 만듭니다.
+- **`sync-local.ps1`**: 내 PC의 `~/.claude/`를 위한 스크립트라 클라우드와 상관없습니다.
+
+### 결과 받기
+
+1. 작업이 끝나면 Claude가 작업 브랜치를 GitHub에 올립니다.
+2. **Changes** 카드에서 변경 내용을 보고 **Create PR**로 PR을 만듭니다.
+3. PR은 직접 확인하고 병합합니다([커밋과 PR 규칙](../.claude/rules/git.md)).
+4. 클라우드는 브랜치를 지울 수 없습니다. 병합 후 GitHub에서 지우거나, 저장소 설정의 "Automatically delete head branches"를 켭니다.
+
+로컬과 오가기:
+
+- 클라우드 세션을 내 PC 터미널로 가져오기: 그 저장소 폴더에서 `claude --teleport` (작업 트리가 깨끗해야 함)
+- 로컬에서 클라우드로 일 보내기: `claude --cloud "할 일"` (현재 브랜치 기준이므로 먼저 푸시)
+
+### 사용량
+
+- 클라우드 세션은 요금제 사용량에서 차감되고, 가상 머신 비용은 따로 없습니다.
+- 세션 여러 개를 동시에 돌리면 사용량 한도를 함께 씁니다.
+- 크레딧과 사용량은 Claude 설정의 사용량 화면에서 확인합니다.
 
 ## 규칙을 고친 뒤
 
@@ -115,4 +175,6 @@ claude-home이 규칙의 원본입니다. 규칙은 항상 여기서 고치고 �
 | 한글이 깨져 보임 | 터미널 인코딩 | PowerShell 7을 쓰고, 파일은 UTF-8로 저장 |
 | `gh` 명령이 권한 오류 | 로그인 안 됨 또는 권한 부족 | `gh auth login`, 비공개 저장소는 `repo` 권한 필요 |
 | 클라우드 세션이 규칙을 안 따름 | 고른 저장소에 규칙이 없음 | 그 저장소에 `.claude/rules/`와 `CLAUDE.md`가 있는지 확인 |
+| 클라우드 저장소 목록에 `claude-home`이 없음 | 비공개 저장소 접근 권한 없음 | Claude GitHub App 설치 시 그 저장소를 포함하거나 `/web-setup` |
+| 클라우드에서 `flutter`나 `pwsh`를 찾을 수 없음 | 미리 설치되어 있지 않음 | 그 프로젝트용 환경의 Setup script에 설치 명령 추가 |
 | 규칙을 고쳤는데 로컬에 반영 안 됨 | 동기화를 안 함 | `git pull` 후 `sync-local.ps1` 다시 실행 |
