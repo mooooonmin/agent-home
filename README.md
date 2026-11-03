@@ -58,7 +58,7 @@ Claude가 다음 순서로 진행합니다.
 1. `scripts/new-project.ps1`로 새 폴더에 규칙, 린트 설정, `.gitignore`, 검사 스크립트, CI(공통 + 언어별), README·CLAUDE.md·CHANGELOG, ADR 템플릿, 첫 실행 계획을 깔고 `git init` 합니다.
 2. 언어 공식 도구(Spring Initializr, `uv init`, Vite, `flutter create`, `go mod init`)로 뼈대를 만듭니다. 이미 깐 파일은 덮어쓰지 않습니다.
 3. 첫 실행 계획(`docs/exec-plans/active/0001-initial-setup.md`)을 따라 ADR, README, CLAUDE.md를 채우고 첫 기능과 테스트를 만듭니다.
-4. 로컬 검사가 모두 통과하면 첫 커밋을 하고, 확인을 받은 뒤 GitHub에 올려 CI를 확인합니다.
+4. 로컬 검사가 모두 통과하면 첫 커밋을 하고, 확인을 받은 뒤 GitHub에 올려 CI를 확인합니다. GitHub 저장소에는 병합된 PR의 브랜치를 자동으로 지우는 설정을 켭니다.
 
 스크립트만 따로 쓸 수도 있습니다. `-WhatIf`를 붙이면 만들 파일만 보여 줍니다.
 
