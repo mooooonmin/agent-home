@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python -I templates/ci/agent_hooks.py pre-bash",
+            "command": "python -I -c \"import runpy,subprocess,sys;r=subprocess.run(['git','rev-parse','--show-toplevel'],capture_output=True,text=True).stdout.strip();p=r+'/templates/ci/agent_hooks.py';sys.argv=[p,*sys.argv[1:]];runpy.run_path(p,run_name='__main__')\" pre-bash",
             "timeout": 30
           }
         ]
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python -I templates/ci/agent_hooks.py stop templates/ci/repo_checks.py --docs-exclude templates",
+            "command": "python -I -c \"import runpy,subprocess,sys;r=subprocess.run(['git','rev-parse','--show-toplevel'],capture_output=True,text=True).stdout.strip();p=r+'/templates/ci/agent_hooks.py';sys.argv=[p,*sys.argv[1:]];runpy.run_path(p,run_name='__main__')\" stop templates/ci/repo_checks.py --docs-exclude templates",
             "timeout": 120
           }
         ]

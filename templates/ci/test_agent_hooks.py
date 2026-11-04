@@ -31,11 +31,32 @@ def reason(command: str, state: hooks.RepoState) -> str | None:
 class GitCallsTest(unittest.TestCase):
     def test_이어진_명령과_환경_변수와_C_옵션을_읽는다(self):
         calls = hooks.git_calls("cd app && GIT_TRACE=0 git -C sub commit -m '메시지' ; ls | git push origin x")
-        self.assertEqual([(c.directory, c.subcommand) for c in calls], [("sub", "commit"), (None, "push")])
+        self.assertEqual([(c.directory, c.subcommand) for c in calls], [("app/sub", "commit"), ("app", "push")])
 
     def test_heredoc_본문의_명령은_무시한다(self):
         command = "git commit -F - <<'EOF'\n제목\n\ngit push origin main 은 하지 않음\nEOF"
         self.assertEqual([c.subcommand for c in hooks.git_calls(command)], ["commit"])
+
+    def test_heredoc_뒤에_오는_명령은_읽는다(self):
+        command = "git commit -F - <<'EOF'\n제목\nEOF\ngit push origin main"
+        self.assertEqual([c.subcommand for c in hooks.git_calls(command)], ["commit", "push"])
+
+    def test_here_string은_heredoc으로_보지_않는다(self):
+        command = "cat <<< EOF\ngit push origin main"
+        self.assertEqual([c.subcommand for c in hooks.git_calls(command)], ["push"])
+
+    def test_따옴표_안의_구분자와_줄바꿈은_나누지_않는다(self):
+        calls = hooks.git_calls('git commit -m "a && b\ngit push origin main"')
+        self.assertEqual([c.subcommand for c in calls], ["commit"])
+
+    def test_cd와_여러_C_옵션을_따라간다(self):
+        calls = hooks.git_calls("cd ../other && git -C repos -C app commit -m x")
+        self.assertEqual(calls[0].directory, "../other/repos/app")
+
+    def test_sh_c와_명령_치환_안의_git도_읽는다(self):
+        for command in ('bash -c "git status && git push origin main"', "echo $(git push origin main)"):
+            with self.subTest(command=command):
+                self.assertIn("push", [c.subcommand for c in hooks.git_calls(command)])
 
 
 class BlockedReasonTest(unittest.TestCase):
@@ -60,10 +81,14 @@ class BlockedReasonTest(unittest.TestCase):
         self.assertIsNotNone(reason("git push", ON_MAIN))
         self.assertIsNotNone(reason("git push origin HEAD", ON_MAIN))
 
-    def test_원격에_아직_없는_기본_브랜치로의_첫_푸시는_허용한다(self):
+    def test_원격_브랜치를_모르는_새_저장소의_첫_푸시는_허용한다(self):
         new_repo = hooks.RepoState(branch="main", has_commits=True)
         self.assertIsNone(reason("git push -u origin main", new_repo))
-        self.assertIsNotNone(reason("git push upstream main", hooks.RepoState("main", True, frozenset({"upstream/main"}))))
+
+    def test_main을_받지_않은_clone이나_주소로_푸시해도_막는다(self):
+        single_branch = hooks.RepoState(branch="feat/x", has_commits=True, remote_branches=frozenset({"origin/feat/x"}))
+        self.assertIsNotNone(reason("git push origin HEAD:main", single_branch))
+        self.assertIsNotNone(reason("git push https://github.com/me/repo.git main", ON_FEATURE))
 
     def test_옵션_값은_대상으로_보지_않는다(self):
         self.assertIsNone(reason("git push -o main origin feat/x", ON_FEATURE))
@@ -128,11 +153,19 @@ class RepoHookTest(unittest.TestCase):
             code, _ = run_main(["stop", "check.py"], {"cwd": str(repo.root), "stop_hook_active": True})
             self.assertEqual(code, hooks.EXIT_ALLOW)
 
-    def test_stop은_바뀐_파일이_없거나_검사_도구가_없으면_넘어간다(self):
+    def test_stop은_커밋했지만_올리지_않은_변경도_검사한다(self):
         with TempGitRepo() as repo:
             (repo.root / "check.py").write_text("raise SystemExit(1)\n", encoding="utf-8")
             repo.git("add", "check.py")
             repo.git("commit", "-q", "-m", "검사 추가")
+            self.assertEqual(run_main(["stop", "check.py"], {"cwd": str(repo.root)})[0], hooks.EXIT_BLOCK)
+
+    def test_stop은_바뀐_것도_올리지_않은_커밋도_없거나_검사_도구가_없으면_넘어간다(self):
+        with TempGitRepo() as repo:
+            (repo.root / "check.py").write_text("raise SystemExit(1)\n", encoding="utf-8")
+            repo.git("add", "check.py")
+            repo.git("commit", "-q", "-m", "검사 추가")
+            repo.git("update-ref", "refs/remotes/origin/main", "HEAD")  # 푸시한 것처럼
             self.assertEqual(run_main(["stop", "check.py"], {"cwd": str(repo.root)})[0], hooks.EXIT_ALLOW)
             (repo.root / "new.txt").write_text("바뀜\n", encoding="utf-8")
             self.assertEqual(run_main(["stop", "missing.py"], {"cwd": str(repo.root)})[0], hooks.EXIT_ALLOW)

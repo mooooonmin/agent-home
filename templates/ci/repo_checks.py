@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import json
 import re
 import shutil
 import subprocess
@@ -44,7 +45,7 @@ CODEX_DOC_MAX_BYTES = 32 * 1024
 SKILL_SOURCE_DIR = ".agents/skills/"
 SKILL_MIRROR_DIR = ".claude/skills/"
 HOOK_CONFIG_FILES = (".claude/settings.json", ".codex/hooks.json")
-HOOK_SCRIPT = re.compile(r"(?:\$\{CLAUDE_PROJECT_DIR\}/)?([\w./-]+\.py)\b")
+HOOK_SCRIPT = re.compile(r"[\w.-]+(?:/[\w.-]+)*\.py\b")
 # Claude Code가 AGENTS.md를 가져오는 줄로 인정하는 형태
 CLAUDE_IMPORT_LINES = ("@AGENTS.md", "@./AGENTS.md")
 TEXT_SUFFIXES = {
@@ -226,15 +227,33 @@ def check_skill_mirror(root: Path, files: list[str]) -> list[str]:
     return errors
 
 
+def hook_command_strings(node, inside_hooks: bool = False):
+    """설정 JSON에서 `hooks` 아래에 있는 문자열(명령과 인자)만 꺼냅니다."""
+    if isinstance(node, dict):
+        for key, value in node.items():
+            yield from hook_command_strings(value, inside_hooks or key == "hooks")
+    elif isinstance(node, list):
+        for item in node:
+            yield from hook_command_strings(item, inside_hooks)
+    elif isinstance(node, str) and inside_hooks:
+        yield node
+
+
 def check_hook_scripts(root: Path, files: list[str]) -> list[str]:
     errors = []
     for rel in HOOK_CONFIG_FILES:
         if rel not in files:
             continue
-        for script in sorted({m.group(1) for line in read_lines(root / rel) for m in HOOK_SCRIPT.finditer(line)}):
+        try:
+            config = json.loads((root / rel).read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+            errors.append(f"{rel}: JSON으로 읽을 수 없습니다 ({error})")
+            continue
+        scripts = {m.group(0) for text in hook_command_strings(config) for m in HOOK_SCRIPT.finditer(text)}
+        for script in sorted(scripts):
             if not (root / script).is_file():
                 errors.append(
-                    f"{rel}: 훅 스크립트 {script}가 없습니다. 이대로면 셸 명령이 모두 막힙니다 "
+                    f"{rel}: 훅 스크립트 {script}가 없습니다. 이대로면 셸 명령이 막히거나 훅이 돌지 않습니다 "
                     f"(claude-home의 sync_rules.py로 넣거나 훅 설정을 지움)"
                 )
     return errors

@@ -170,12 +170,19 @@ class RepoChecksTest(unittest.TestCase):
 
     def test_훅_설정이_가리키는_스크립트가_없으면_알린다(self):
         with TempRepo() as repo:
-            repo.write(".claude/settings.json", '{"args": ["-I", "${CLAUDE_PROJECT_DIR}/scripts/agent_hooks.py"]}')
-            repo.write(".codex/hooks.json", '{"command": "python -I scripts/agent_hooks.py pre-bash"}')
+            repo.write(".claude/settings.json", '{"hooks": {"Stop": [{"hooks": [{"command": "python", '
+                       '"args": ["-I", "${CLAUDE_PROJECT_DIR}/scripts/agent_hooks.py"]}]}]}}')
+            repo.write(".codex/hooks.json", '{"hooks": {"Stop": [{"hooks": [{"command": '
+                       '"python -I -c \\"p=r+\'/scripts/agent_hooks.py\'\\" stop"}]}]}}')
             files = [".claude/settings.json", ".codex/hooks.json"]
             self.assertEqual(len(repo_checks.check_hook_scripts(repo.root, files)), 2)
             repo.write("scripts/agent_hooks.py", "")
             self.assertEqual(repo_checks.check_hook_scripts(repo.root, files), [])
+
+    def test_훅_밖의_py_언급은_검사하지_않는다(self):
+        with TempRepo() as repo:
+            repo.write(".claude/settings.json", '{"permissions": {"allow": ["Bash(python tools/gen.py:*)"]}}')
+            self.assertEqual(repo_checks.check_hook_scripts(repo.root, [".claude/settings.json"]), [])
 
     def test_깨끗한_저장소는_통과한다(self):
         with TempRepo() as repo:
