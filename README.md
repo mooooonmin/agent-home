@@ -31,6 +31,7 @@ claude-home/
 │  ├─ ci/                        # 저장소 검사 스크립트와 테스트, GitHub Actions (공통 + lang/ 언어별 빌드·테스트)
 │  └─ translation-repo/          # 새 번역 저장소용 README·NOTICE·TRANSLATION.md
 ├─ scripts/
+│  ├─ README.md                  # 스크립트별 용도와 확인 명령
 │  ├─ new-project.ps1            # 규칙·검사·문서 틀을 깐 새 프로젝트 만들기
 │  ├─ sync_rules.py              # 공통 규칙·스킬·검사 도구를 프로젝트, 사용자 설정, .claude/skills로 복사
 │  └─ test_sync_rules.py         # sync_rules.py 테스트
@@ -89,7 +90,7 @@ pwsh -File scripts/new-project.ps1 -Name my-app -Language python -Description "�
    ```bash
    python -I scripts/sync_rules.py --target ../my-app --lang python --apply
    ```
-3. 프로젝트에 원래 `CLAUDE.md`가 있었다면 맨 위에 `@AGENTS.md` 줄을 넣습니다. 도구가 "확인 필요"로 알려 줍니다.
+3. 도구가 "확인 필요"로 알려 준 것을 처리합니다. 원래 있던 `CLAUDE.md`에는 맨 위에 `@AGENTS.md` 줄을 넣습니다. 고친 흔적이 있는 예전 규칙 사본(`.claude/rules/basics.md` 등)은 지우지 않고 남겨 두므로, 프로젝트만의 내용을 `AGENTS.md` 위쪽으로 옮긴 뒤 직접 지웁니다.
 4. `AGENTS.md` 위쪽(표시 밖)에 저장소 안내를 채웁니다. 형식은 `templates/AGENTS.project.md`를 봅니다.
 5. 언어에 맞는 `templates/lint/` 설정과 `templates/ci/`의 GitHub Actions를 넣습니다.
 
