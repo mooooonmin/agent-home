@@ -12,5 +12,43 @@
       "Read(./.env.*)",
       "Read(./secrets/**)"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python",
+            "args": [
+              "-I",
+              "${CLAUDE_PROJECT_DIR}/templates/ci/agent_hooks.py",
+              "pre-bash"
+            ],
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python",
+            "args": [
+              "-I",
+              "${CLAUDE_PROJECT_DIR}/templates/ci/agent_hooks.py",
+              "stop",
+              "templates/ci/repo_checks.py",
+              "--docs-exclude",
+              "templates"
+            ],
+            "timeout": 120
+          }
+        ]
+      }
+    ]
   }
 }

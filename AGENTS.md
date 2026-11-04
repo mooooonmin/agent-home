@@ -12,6 +12,7 @@ Codex는 이 파일을 직접 읽고, Claude Code는 `CLAUDE.md`의 `@AGENTS.md`
 | `.claude/rules/lang/*.md` | Java, Python, JS/TS, Dart, Go 규칙 | Claude Code는 해당 언어 파일을 다룰 때 자동으로, Codex는 공통 규칙의 표를 보고 읽음 |
 | `.claude/rules/translation.md` | 번역 원칙 | 위와 같음 (`.md`, `.ipynb`) |
 | `.agents/skills/` | 스킬 원본 (`new-project`, `research`, `update-docs`, `translate-chapter`, `review-translation`) | Codex가 읽음. Claude Code는 같은 사본인 `.claude/skills/`를 읽음 |
+| `.claude/settings.json`, `.codex/hooks.json` | 훅: 기본 브랜치 직접 커밋·푸시 차단, 끝내기 전 저장소 검사 (`templates/ci/agent_hooks.py`) | 셸 명령 전, 응답을 끝내기 전. 자세한 내용은 [초기 설정의 훅](docs/setup.md#훅) |
 | `glossary/` | 분야별 용어집 | 번역할 때 해당 분야 파일을 먼저 읽음 |
 
 ## 이 저장소에서 작업할 때
@@ -224,6 +225,7 @@ Codex는 이 파일을 직접 읽고, Claude Code는 `CLAUDE.md`의 `@AGENTS.md`
 ### 자동 점검
 
 - CI에서 깨진 내부 링크·이미지·앵커를 막습니다(`repo_checks.py`에 포함). 템플릿: claude-home의 `templates/ci/`
+- 훅(`scripts/agent_hooks.py`)이 기본 브랜치에 바로 커밋·푸시하는 명령을 막고, 끝내기 전에 저장소 검사를 돌립니다. 훅이 막으면 우회하지 말고 이유를 따르거나 사용자에게 알립니다.
 - 문서가 코드와 어긋났는지는 `update-docs` 스킬로 점검합니다.
 
 ## 커밋과 PR 규칙

@@ -79,6 +79,7 @@ python -I C:/00.PROJECT/claude-home/scripts/sync_rules.py --user --apply
 | Codex 규칙 | `~/.codex/AGENTS.md` 열기 | `claude-home:common-rules` 표시 사이에 공통 규칙이 있음 |
 | 검사·동기화 도구 | claude-home에서 `python -I -m unittest discover -s templates/ci -p "test_*.py"`와 `python -I -m unittest discover -s scripts -p "test_*.py"` | 둘 다 `OK` |
 | 저장소 검사 | claude-home에서 `python -I templates/ci/repo_checks.py --docs-exclude templates` | `문제 0개` |
+| Codex 훅 승인 | claude-home(과 각 프로젝트)에서 Codex를 열고 `/hooks` | 저장소 훅 2개를 승인함 ([훅](#훅)) |
 | 새 프로젝트 미리보기 | claude-home에서 `pwsh -File scripts/new-project.ps1 -Name test-app -Language python -WhatIf` | 만들 파일 목록만 나오고 폴더는 생기지 않음 |
 | 규칙 적용 | 아무 프로젝트에서 Claude Code와 Codex를 각각 열고 "지금 적용된 규칙 파일 목록 알려줘"라고 묻기 | Claude Code는 `~/.claude/rules/`, Codex는 `~/.codex/AGENTS.md`가 언급됨 |
 
@@ -155,6 +156,25 @@ https://claude.ai/code?repositories=mooooonmin/claude-home&prompt=/research%20�
 - 세션 여러 개를 동시에 돌리면 사용량 한도를 함께 씁니다.
 - 크레딧과 사용량은 Claude 설정의 사용량 화면에서 확인합니다.
 
+## 훅
+
+글로 된 규칙 중 꼭 지켜야 할 두 가지를 Claude Code와 Codex가 같은 스크립트(`templates/ci/agent_hooks.py`, 프로젝트에서는 `scripts/agent_hooks.py`)로 강제합니다.
+
+| 훅 | 언제 | 하는 일 |
+|---|---|---|
+| `pre-bash` | 셸 명령을 실행하기 전 | `main`·`master`에 바로 커밋하거나 그쪽으로 푸시하는 명령을 막고 이유를 알려 줌. 앞선 `cd`, `git -C`, `sh -c`, `$(...)`를 따라가고 heredoc 본문(커밋 메시지)은 건너뜀. 커밋이 없는 새 저장소의 첫 커밋과, 원격 브랜치를 하나도 모르는 새 저장소의 첫 푸시(`new-project`의 첫 업로드)는 허용 |
+| `stop` | 응답을 끝내기 전 | 커밋하지 않은 변경이나 어느 원격에도 올리지 않은 커밋이 있으면 저장소 검사(`repo_checks.py`)를 돌리고, 실패하면 끝내지 않고 고치게 함. 한 번 막은 뒤에는 다시 막지 않음 |
+
+| 도구 | 설정 파일 | 처음 할 일 |
+|---|---|---|
+| Claude Code | `.claude/settings.json`의 `hooks` | 없음. 저장소를 열면 적용됨 |
+| Codex | `.codex/hooks.json`. Codex는 프로젝트 경로를 알려 주지 않아, 명령이 git으로 저장소 루트를 찾아 스크립트를 실행함(하위 폴더에서 시작해도 동작) | 저장소마다 Codex에서 `/hooks`를 열어 두 훅을 승인. Codex는 승인하지 않았거나 내용이 바뀐 저장소 훅을 실행하지 않음(Codex 소스 `codex-rs/hooks/src/engine/discovery.rs` 기준, 화면 흐름은 미확인) |
+
+- 두 훅 모두 `python`을 부릅니다. Windows에서는 `python`이 PATH에 있어야 합니다.
+- Claude Code 설정에서 훅 스크립트 파일이 없으면 `python`이 종료 코드 2로 끝나고, Claude Code는 이것을 "막음"으로 처리해 셸 명령이 모두 막힙니다(Codex 설정은 종료 코드 1이라 훅만 건너뜀). `repo_checks.py`가 설정이 가리키는 스크립트가 있는지 검사합니다.
+- 이 훅은 셸 문장을 읽어 판단하는 보조 장치라 모든 우회를 막지는 못합니다. 기본 브랜치를 확실히 보호하려면 GitHub 저장소의 **Settings → Rules → Rulesets**에서 기본 브랜치에 "Require a pull request before merging"을 켭니다(화면 이름은 바뀔 수 있음).
+- 꼭 기본 브랜치에 바로 올려야 하면 에이전트에게 맡기지 말고 직접 실행합니다.
+
 ## 규칙을 고친 뒤
 
 claude-home이 규칙의 원본입니다. 규칙은 항상 여기서 고치고 다른 곳으로 퍼뜨립니다.
@@ -196,5 +216,7 @@ claude-home이 규칙의 원본입니다. 규칙은 항상 여기서 고치고 �
 | Codex가 규칙 뒷부분을 모름 | `AGENTS.md`가 Codex 기본 한도(32KiB)를 넘어 잘림 | `repo_checks.py`로 크기를 확인하고 자세한 내용을 담당 문서로 옮김 |
 | 클라우드 저장소 목록에 `claude-home`이 없음 | 비공개 저장소 접근 권한 없음 | Claude GitHub App 설치 시 그 저장소를 포함하거나 `/web-setup` |
 | 클라우드에서 `flutter`나 `pwsh`를 찾을 수 없음 | 미리 설치되어 있지 않음 | 그 프로젝트용 환경의 Setup script에 설치 명령 추가 |
+| Claude Code가 모든 셸 명령을 못 함 (`can't open file … agent_hooks.py`) | 훅 설정은 있는데 훅 스크립트가 없음 | claude-home에서 `sync_rules.py --target <프로젝트> --apply`로 넣거나, 훅 설정을 지움 |
+| Codex에서 훅이 돌지 않음 | 저장소 훅을 아직 승인하지 않았거나 훅 내용이 바뀜 | Codex에서 `/hooks`로 승인 |
 | 규칙을 고쳤는데 로컬에 반영 안 됨 | 동기화를 안 함 | `git pull` 후 `sync_rules.py --user --apply` 다시 실행 |
 | 스킬 사본이 원본과 다르다는 검사 오류 | `.agents/skills/`만 고치고 `.claude/skills/`에 복사하지 않음 | claude-home에서는 `sync_rules.py --mirror --apply`, 프로젝트에서는 원본 파일을 그대로 복사 |

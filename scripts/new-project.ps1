@@ -57,8 +57,7 @@ $lang = @{
     go         = @{ Lint = @{ 'go/.golangci.yml' = '.golangci.yml' }; Commands = "gofmt -w . && goimports -w .   # 포맷`ngolangci-lint run              # 린트`ngo test -race ./...            # 테스트" }
 }[$Language]
 
-# 1. 에이전트 설정 (공통 규칙·언어 규칙·스킬은 맨 끝의 sync_rules.py가 넣습니다)
-Copy-File '.claude/settings.json' '.claude/settings.json'
+# 1. 번역 저장소 설정 (공통 규칙·언어 규칙·스킬·훅 설정은 맨 끝의 sync_rules.py가 넣습니다)
 if ($Translation) { Copy-File 'templates/translation-repo/TRANSLATION.md' 'TRANSLATION.md' }
 
 # 2. 공통·언어별 린트 설정과 .gitignore
@@ -73,7 +72,7 @@ foreach ($f in '.editorconfig', '.gitattributes') { Copy-File "templates/lint/$f
 Write-File '.gitignore' ((Read-Template 'templates/lint/.gitignore') + "`n# $Language`n$ignore`n")
 foreach ($entry in $lang.Lint.GetEnumerator()) { Copy-File "templates/lint/$($entry.Key)" $entry.Value }
 
-# 3. CI (검사 스크립트는 맨 끝의 sync_rules.py가 scripts/에 넣습니다)
+# 3. CI (검사 스크립트와 훅 스크립트는 맨 끝의 sync_rules.py가 scripts/에 넣습니다)
 Copy-File 'templates/ci/checks.yml' '.github/workflows/checks.yml'
 Copy-File "templates/ci/lang/$Language.yml" ".github/workflows/$Language.yml"
 Write-File '.env.example' "# 필요한 환경 변수를 값 없이 적습니다. 실제 값은 .env(커밋하지 않음)나 CI 비밀값에 둡니다.`n"
@@ -183,7 +182,7 @@ if ($script:cmd.ShouldProcess($target, 'git init -b main')) {
     }
 }
 
-# 6. 공통 규칙·언어 규칙·스킬·검사 스크립트 (claude-home과 같은 내용을 유지하도록 한 곳에서 관리)
+# 6. 공통 규칙·언어 규칙·스킬·검사·훅 스크립트와 훅 설정 (claude-home과 같은 내용을 유지하도록 한 곳에서 관리)
 $sync = @('-I', (Join-Path $repo 'scripts/sync_rules.py'), '--target', $target, '--lang', $Language)
 if ($Translation) { $sync += '--translation' }
 if ($WhatIfPreference) {
