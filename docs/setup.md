@@ -80,6 +80,7 @@ python -I C:/00.PROJECT/claude-home/scripts/sync_rules.py --user --apply
 | 검사·동기화 도구 | claude-home에서 `python -I -m unittest discover -s templates/ci -p "test_*.py"`와 `python -I -m unittest discover -s scripts -p "test_*.py"` | 둘 다 `OK` |
 | 저장소 검사 | claude-home에서 `python -I templates/ci/repo_checks.py --docs-exclude templates` | `문제 0개` |
 | Codex 훅 승인 | claude-home(과 각 프로젝트)에서 Codex를 열고 `/hooks` | 저장소 훅 2개를 승인함 ([훅](#훅)) |
+| 기본 브랜치 보호 (GitHub Pro 이상) | 저장소의 Settings → Rules → Rulesets | `main 보호`가 Active ([GitHub 저장소 규칙](#github-저장소-규칙)) |
 | 새 프로젝트 미리보기 | claude-home에서 `pwsh -File scripts/new-project.ps1 -Name test-app -Language python -WhatIf` | 만들 파일 목록만 나오고 폴더는 생기지 않음 |
 | 규칙 적용 | 아무 프로젝트에서 Claude Code와 Codex를 각각 열고 "지금 적용된 규칙 파일 목록 알려줘"라고 묻기 | Claude Code는 `~/.claude/rules/`, Codex는 `~/.codex/AGENTS.md`가 언급됨 |
 
@@ -172,8 +173,33 @@ https://claude.ai/code?repositories=mooooonmin/claude-home&prompt=/research%20�
 
 - 두 훅 모두 `python`을 부릅니다. Windows에서는 `python`이 PATH에 있어야 합니다.
 - Claude Code 설정에서 훅 스크립트 파일이 없으면 `python`이 종료 코드 2로 끝나고, Claude Code는 이것을 "막음"으로 처리해 셸 명령이 모두 막힙니다(Codex 설정은 종료 코드 1이라 훅만 건너뜀). `repo_checks.py`가 설정이 가리키는 스크립트가 있는지 검사합니다.
-- 이 훅은 셸 문장을 읽어 판단하는 보조 장치라 모든 우회를 막지는 못합니다. 기본 브랜치를 확실히 보호하려면 GitHub 저장소의 **Settings → Rules → Rulesets**에서 기본 브랜치에 "Require a pull request before merging"을 켭니다(화면 이름은 바뀔 수 있음).
+- 이 훅은 셸 문장을 읽어 판단하는 보조 장치라 모든 우회를 막지는 못합니다. 기본 브랜치를 확실히 보호하려면 아래 [GitHub 저장소 규칙](#github-저장소-규칙)을 함께 켭니다.
 - 꼭 기본 브랜치에 바로 올려야 하면 에이전트에게 맡기지 말고 직접 실행합니다.
+
+### GitHub 저장소 규칙
+
+GitHub가 서버에서 기본 브랜치를 보호하게 합니다. 훅과 달리 사람이 직접 실행한 명령이나 다른 도구에도 적용됩니다. 저장소마다 한 번 설정합니다.
+
+먼저 요금제를 확인합니다. 저장소 규칙은 공개 저장소에서는 GitHub Free로도 쓸 수 있지만, **비공개 저장소에서는 GitHub Pro 이상**이 필요합니다(근거: GitHub 문서 원본 [`data/reusables/gated-features/repo-rules.md`](https://github.com/github/docs/blob/main/data/reusables/gated-features/repo-rules.md)). 예전 방식인 보호 브랜치도 조건이 같습니다. claude-home처럼 비공개 저장소인데 Free라면 이 절은 건너뛰고 훅에 맡깁니다. 요금제는 [github.com/settings/billing](https://github.com/settings/billing)에서 확인합니다.
+
+1. 저장소의 **Settings → Rules → Rulesets**에서 **New ruleset → New branch ruleset**을 누릅니다. claude-home은 [이 주소](https://github.com/mooooonmin/claude-home/settings/rules)입니다. 화면 이름은 바뀔 수 있습니다.
+2. 다음처럼 정하고 저장합니다.
+
+   | 항목 | 값 | 이유 |
+   |---|---|---|
+   | Ruleset name | `main 보호` | |
+   | Enforcement status | Active | |
+   | Bypass list | 비워 둠 | 나도 PR로 병합하므로 예외가 필요 없음 |
+   | Target branches | Add target → Include default branch | 기본 브랜치(`main`) |
+   | Restrict deletions | 켬 | 기본 브랜치 삭제 방지 |
+   | Block force pushes | 켬 | 기록 덮어쓰기 방지 |
+   | Require a pull request before merging | 켬, Required approvals는 `0` | 혼자 쓰는 저장소에서는 내 PR을 내가 승인할 수 없음 |
+   | Require status checks to pass | 켬, `repository` 검사 추가 | CI(`.github/workflows/checks.yml`의 `repository` 작업)가 통과해야 병합. 목록에 없으면 그 저장소에서 CI가 한 번 돈 뒤 다시 찾음 |
+
+3. 확인: 기본 브랜치로 직접 푸시하면 GitHub가 거절하고, PR 화면에는 CI 검사를 기다린다고 표시됩니다.
+
+- 클라우드 세션은 `claude/...` 작업 브랜치에만 푸시하므로 영향이 없습니다.
+- 급하게 기본 브랜치에 직접 올려야 하면 규칙의 Enforcement status를 잠시 Disabled로 바꾼 뒤 되돌립니다.
 
 ## 규칙을 고친 뒤
 
