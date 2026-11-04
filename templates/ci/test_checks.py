@@ -123,6 +123,14 @@ class RepoChecksTest(unittest.TestCase):
             self.assertEqual(len(errors), 1)
             self.assertIn("pkg/AGENTS.md", errors[0])
 
+    def test_200줄을_넘는_AGENTS_md를_찾는다(self):
+        with TempRepo() as repo:
+            repo.write("AGENTS.md", "줄\n" * 201)
+            repo.write("ok/AGENTS.md", "줄\n" * 200)
+            errors = repo_checks.check_agents_md_size(repo.root, ["AGENTS.md", "ok/AGENTS.md"])
+            self.assertEqual(len(errors), 1)
+            self.assertIn("201줄", errors[0])
+
     def test_AGENTS_md를_가져오지_않는_CLAUDE_md를_찾는다(self):
         with TempRepo() as repo:
             repo.write("AGENTS.md", "# 안내\n")

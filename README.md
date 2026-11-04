@@ -20,6 +20,8 @@ claude-home/
 │  ├─ settings.json              # 권한 (비밀값 파일 읽기 금지)과 훅 (Claude Code)
 │  ├─ skills/                    # .agents/skills와 같은 사본 (Claude Code)
 │  └─ rules/                     # 해당 파일을 다룰 때 읽히는 규칙 (Claude Code는 자동, Codex는 AGENTS.md의 표를 보고 읽음)
+│     ├─ code.md                 # 코드·의존성·CI 파일: 읽기 쉬운 코드, 설계, 오류 처리, 테스트, 스크립트, 보안
+│     ├─ writing-docs.md         # .md: 폴더 README, 문서 구성, 실행 계획, 문서 쓰는 법
 │     ├─ translation.md          # 번역 (.md, .ipynb)
 │     └─ lang/                   # java, python, typescript, dart, go
 ├─ docs/setup.md                 # 초기 설정 안내
@@ -84,7 +86,7 @@ pwsh -File scripts/new-project.ps1 -Name my-app -Language python -Description "�
 
 클라우드 세션에는 **세션에 넣은 저장소의 파일만** 있고 내 PC의 `~/.claude/`, `~/.codex/`는 따라가지 않습니다. 그래서 프로젝트 저장소에도 규칙이 있어야 합니다.
 
-1. 미리보기로 바뀔 파일을 확인합니다. 공통 규칙은 프로젝트 `AGENTS.md`의 `claude-home:common-rules` 표시 사이에만 들어가고(없으면 맨 아래에 붙음), 언어 규칙·`update-docs` 스킬·검사 스크립트가 함께 들어갑니다.
+1. 미리보기로 바뀔 파일을 확인합니다. 공통 규칙은 프로젝트 `AGENTS.md`의 `claude-home:common-rules` 표시 사이에만 들어가고(없으면 맨 아래에 붙음), 코드·문서 작성 규칙(`code.md`, `writing-docs.md`)과 언어 규칙, `update-docs` 스킬, 검사·훅 스크립트가 함께 들어갑니다.
    ```bash
    python -I scripts/sync_rules.py --target ../my-app --lang python
    ```

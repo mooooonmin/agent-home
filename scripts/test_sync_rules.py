@@ -41,6 +41,8 @@ class Workspace:
         write(self.source / ".claude/rules/lang/python.md", "# Python 규칙\n")
         write(self.source / ".claude/rules/lang/go.md", "# Go 규칙\n")
         write(self.source / ".claude/rules/translation.md", "# 번역 규칙\n")
+        for name in sync_rules.COMMON_RULE_FILES:
+            write(self.source / ".claude/rules" / name, f"# {name}\n")
         for name in ("update-docs", "translate-chapter", "review-translation", "research"):
             write(self.source / f".agents/skills/{name}/SKILL.md", f"---\nname: {name}\ndescription: 설명\n---\n")
         for script in sync_rules.CHECK_SCRIPTS:
@@ -101,6 +103,7 @@ class ProjectTest(unittest.TestCase):
             paths = changed(plan, ws.target)
             for expected in (
                 "AGENTS.md", "CLAUDE.md", ".claude/rules/lang/python.md",
+                ".claude/rules/code.md", ".claude/rules/writing-docs.md",
                 ".agents/skills/update-docs/SKILL.md", ".claude/skills/update-docs/SKILL.md",
                 "scripts/repo_checks.py", "scripts/agent_hooks.py", ".claude/settings.json", ".codex/hooks.json",
             ):

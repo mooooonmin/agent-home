@@ -9,7 +9,7 @@
 - 셸 스크립트 문법: `bash -n` (bash가 없으면 건너뜀)
 - 문서 내부 링크·이미지·앵커: check_doc_links.py
 - 로컬 변경의 공백 오류: `git diff HEAD --check` (CI의 깨끗한 checkout에서는 할 일이 없음)
-- 에이전트 지시 파일: AGENTS.md가 Codex 기본 읽기 한도(32KiB)를 넘는지, 같은 폴더의 CLAUDE.md가
+- 에이전트 지시 파일: AGENTS.md가 200줄(Claude Code 권장)이나 Codex 기본 읽기 한도(32KiB)를 넘는지, 같은 폴더의 CLAUDE.md가
   `@AGENTS.md`로 가져오는지, `.agents/skills/`(원본)와 `.claude/skills/`(사본)가 같은지
 - git 패턴 파일: `.gitattributes`·`.gitignore`의 중괄호 패턴(`*.{a,b}`). git은 중괄호를 펼치지 않아 아무 파일에도 맞지 않음
 - 에이전트 훅 설정: `.claude/settings.json`, `.codex/hooks.json`이 가리키는 Python 스크립트가 있는지
@@ -43,6 +43,8 @@ LATEST_TAG = re.compile(r"(?:image:\s*\S+:latest\b|^\s*FROM\s+\S+:latest\b|\btag
 CONFLICT = re.compile(r"^(<{7}|>{7}) ")
 # Codex가 AGENTS.md를 읽는 기본 한도(project_doc_max_bytes). 루트부터 작업 폴더까지 합한 크기입니다.
 CODEX_DOC_MAX_BYTES = 32 * 1024
+# Claude Code 공식 권장: 항상 읽히는 지시 파일은 200줄 아래 (code.claude.com/docs/en/memory)
+AGENTS_MD_MAX_LINES = 200
 SKILL_SOURCE_DIR = ".agents/skills/"
 SKILL_MIRROR_DIR = ".claude/skills/"
 GIT_PATTERN_FILES = frozenset({".gitattributes", ".gitignore"})
@@ -177,6 +179,12 @@ def check_agents_md_size(root: Path, files: list[str]) -> list[str]:
     sizes = {str(Path(rel).parent): (root / rel).stat().st_size for rel in docs}
     errors = []
     for rel in docs:
+        lines = len(read_lines(root / rel))
+        if lines > AGENTS_MD_MAX_LINES:
+            errors.append(
+                f"{rel}: {lines}줄로 항상 읽히는 지시 파일 권장 크기({AGENTS_MD_MAX_LINES}줄)를 넘습니다 "
+                f"(특정 파일에만 필요한 내용은 .claude/rules/의 paths 규칙이나 담당 문서로 옮김)"
+            )
         folder = Path(rel).parent
         chain = [folder, *folder.parents]
         total = sum(sizes.get(str(level), 0) for level in chain)
