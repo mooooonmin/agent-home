@@ -43,6 +43,42 @@
 - **Böckeler(martinfowler.com), "Harness engineering for coding agent users"** (2026-04-02): 원문은 이 환경에서 접속이 막혀 같은 저장소의 정리(2차 자료)로 확인했습니다. 안내(feedforward)와 확인(feedback)을 둘 다 갖춰야 하고, 각각을 결정적(린터, 타입 검사)인 것과 추론적(AI 리뷰)인 것으로 나눕니다. 셋 중 동작(behaviour) 하네스가 가장 약하다고 봅니다.
 - **GitHub에서 널리 쓰이는 정리** (2026-11-03 기준 별 수): [walkinglabs/learn-harness-engineering](https://github.com/walkinglabs/learn-harness-engineering)(약 23k)은 하네스를 지시·상태·검증·범위·세션 수명주기의 다섯 영역으로 나눕니다. [agentsmd/agents.md](https://github.com/agentsmd/agents.md)(약 25k)는 AGENTS.md 형식입니다. [shanraisshan/claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice)(약 69k)는 팁 모음으로, 포맷용 PostToolUse 훅과 강제할 동작은 settings.json에 두라는 내용 등을 담고 있습니다. [ai-boost/awesome-harness-engineering](https://github.com/ai-boost/awesome-harness-engineering)(약 5k)는 자료 목록입니다.
 
+## 참고 저장소 비교
+
+2026-11-04에 추가했습니다. 별 수는 GitHub 검색 API 값이고, 내용은 각 저장소의 README와 문서를 직접 읽고 정리했습니다. 공식 "표준 저장소"는 없고, 성격이 셋으로 나뉩니다.
+
+### 규칙·설정 원본 저장소 (claude-home과 같은 종류)
+
+| 저장소 | 별 | 가져올 것 |
+|---|---|---|
+| [trailofbits/claude-code-config](https://github.com/trailofbits/claude-code-config) | 약 2.1k | 구조가 가장 비슷합니다. 항상 읽히는 층은 약 100줄이고, 언어별 규칙은 `paths:` 층으로 둡니다. claude-home에 없는 것은 세 가지입니다: 기본 차단 훅(`rm -rf`, main 직접 푸시), 성급한 완료를 막는 Stop 프롬프트 훅, 주 1회 `/insights`로 설정을 고치는 개선 루프 |
+| [garrytan/gstack](https://github.com/garrytan/gstack) | 약 139k | "팀 모드"는 저장소에 사본을 두지 않고, 세션을 시작할 때 자동으로 업데이트를 확인합니다. 복사본이 원본을 따라가지 못하는 문제의 다른 해법입니다. 클라우드 세션에서 동작하는지는 미확인 |
+
+### 에이전트 본체와 설치형 하네스
+
+| 저장소 | 별 | 성격 | claude-home에 주는 시사점 |
+|---|---|---|---|
+| [NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent) | 약 260k | Claude Code와 같은 층의 **에이전트 본체**. 모델을 고를 수 있고, 메신저 게이트웨이·cron·스킬 자동 생성 기능이 있음 | ① **호환성.** Hermes는 프로젝트 지시 파일을 **하나만** 읽습니다(`.hermes.md` → `AGENTS.override.md` → `AGENTS.md` → `CLAUDE.md` → `.cursorrules` 중 먼저 찾은 것, [context-files 문서](https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/features/context-files.md)). 이 목록에 `.claude/rules/`는 없어서, Hermes에서는 claude-home 규칙 중 `CLAUDE.md`만 읽힐 것으로 보입니다(문서 기준 추론, 실제로 시험하지 않음). ② **자체 `AGENTS.md`가 좋은 하네스 예시**입니다. 루트는 허브와 라우팅 표("X에서 작업하면 X/AGENTS.md를 읽는다")만 두고, 크기 상한을 `python scripts/check`로 강제합니다(루트 12k자, 경로 사슬 30k자). "잘 만들어도 받지 않는 것" 목록, "버그라고 부르기 전에 주장과 의도를 확인" 같은 규칙도 있습니다 |
+| [affaan-m/ECC](https://github.com/affaan-m/ECC) | 약 297k | 하위 에이전트 71개, 스킬 314개, 명령 98개, 규칙(`common/` + 언어별), 훅, Codex·OpenCode·Cursor 어댑터를 묶은 대형 패키지 | ① "The root is the source of truth. Platform adapters package or map these same workflows instead of maintaining separate copies." 원본은 하나로 두고 에이전트별로 연결하는 방식이라, claude-home의 원칙과 같고 배포 방법만 다릅니다. ② 규칙을 `common/` + 언어별로 나누는 구조도 같습니다. ③ commands를 skills로 옮기는 중이고 commands는 호환용으로 남겨 둡니다(공식 권장과 같음). ④ 훅·MCP·지시 파일을 "실행 가능한 설정"으로 보고 공식 경로에서만 설치하라고 합니다. **통째로 들이는 것은 비추천**합니다. "작게 시작"과 반대 방향이므로, 리뷰어 에이전트처럼 필요한 것만 골라 참고합니다 |
+| [obra/superpowers](https://github.com/obra/superpowers) | 약 312k | 스킬로 만든 개발 방법론(브레인스토밍 → 계획 → TDD → 리뷰 → 마무리) | "Evidence over claims"는 `basics.md`의 상태 구분과 같은 방향 |
+| [code-yeongyu/oh-my-openagent](https://github.com/code-yeongyu/oh-my-openagent), [Yeachan-Heo/oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode), [rlaope/oh-my-hermes](https://github.com/rlaope/oh-my-hermes) | 약 71k / 41k / 5k | 다중 에이전트·다중 모델 조율 패키지 | claude-home 위에 얹어 쓰는 도구이고, 대체재가 아님 |
+
+### 운영 패턴
+
+| 저장소 | 별 | 가져올 것 |
+|---|---|---|
+| [cobusgreyling/loop-engineering](https://github.com/cobusgreyling/loop-engineering) | 약 11.7k | 저장소 주변에서 에이전트를 주기적으로 돌리는 패턴 모음입니다(daily triage, PR babysitter, CI sweeper, post-merge cleanup 등). [설계 체크리스트](https://github.com/cobusgreyling/loop-engineering/blob/main/docs/loop-design-checklist.md)는 이렇게 권합니다: **L1 보고만 → L2 작은 자동 수정 → L3 무인** 순서로 단계적으로 넓히고, 만드는 쪽과 확인하는 쪽을 분리하고, 시도 횟수에 상한(예: 3회)을 두고, 상태 파일·실행 기록·중단 스위치를 두고, 허용 목록 없이 자동 병합하지 않습니다. claude-home에서 정기 실행(위 9번)을 도입한다면 **L1 보고만으로 시작**하는 것이 맞습니다. 직접 병합하는 `git.md` 규칙과도 맞습니다 |
+| [github/spec-kit](https://github.com/github/spec-kit), [Fission-AI/OpenSpec](https://github.com/Fission-AI/OpenSpec) | 약 147k / 74k | 명세 중심 개발 절차. 지금 claude-home 범위 밖 |
+
+### 정리
+
+- claude-home을 대체할 저장소는 없습니다. 규칙 원본으로 계속 두고, 패턴만 가져옵니다.
+- 위 "고칠 만한 것"에 보탤 후보:
+  - **규칙 크기 상한 검사**(hermes-agent): `repo_checks.py`에 항상 읽히는 규칙의 줄 수·글자 수 상한을 넣습니다.
+  - **"하지 않는 것" 목록**(hermes-agent): 규칙마다 받지 않는 방식을 적어 둡니다.
+  - **정기 실행은 L1부터**(loop-engineering): 처음에는 보고만 합니다.
+- Hermes·Codex 같은 다른 에이전트도 쓸 계획이라면 `AGENTS.md`를 원본으로 두는 구조(ECC의 어댑터 방식 또는 `@AGENTS.md` 가져오기)를 따로 검토해야 합니다. 지금 구조는 Claude Code 전용입니다.
+
 ## 더 볼 것
 
 - [Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents): 장기 실행 하네스의 원형
