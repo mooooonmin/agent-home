@@ -32,6 +32,8 @@ BLOCK_START = "<!-- claude-home:common-rules:start -->"
 BLOCK_END = "<!-- claude-home:common-rules:end -->"
 LANGUAGES = ("java", "python", "typescript", "dart", "go")
 TRANSLATION = "translation"
+# 코드·문서를 다룰 때만 읽히는 공통 규칙. 언어와 상관없이 모든 프로젝트에 넣습니다.
+COMMON_RULE_FILES = ("code.md", "writing-docs.md")
 PROJECT_SKILLS = ("update-docs",)
 TRANSLATION_SKILLS = ("translate-chapter", "review-translation")
 CHECK_SCRIPTS = ("repo_checks.py", "check_doc_links.py", "test_checks.py", "agent_hooks.py", "test_agent_hooks.py")
@@ -205,6 +207,8 @@ def plan_project(source: Path, target: Path, rule_sets: set[str]) -> Plan:
         installed.add(TRANSLATION)
     wanted = rule_sets | installed
 
+    for name in COMMON_RULE_FILES:
+        planner.write(rules / name, (source / ".claude/rules" / name).read_bytes())
     for lang in sorted(wanted & set(LANGUAGES)):
         planner.write(rules / "lang" / f"{lang}.md", (source / ".claude/rules/lang" / f"{lang}.md").read_bytes())
     skills = list(PROJECT_SKILLS)

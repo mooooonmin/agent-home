@@ -61,7 +61,7 @@ python -I C:/00.PROJECT/claude-home/scripts/sync_rules.py --user --apply
 |---|---|---|
 | 공통 규칙 (`AGENTS.md`의 표시 사이) | `~/.claude/rules/claude-home.md` | Claude Code: 모든 프로젝트에 적용 |
 | 같은 공통 규칙 | `~/.codex/AGENTS.md`의 같은 표시 사이 | Codex: 모든 프로젝트에 적용. 표시 밖에 적어 둔 내 지시는 그대로 둠 |
-| `.claude/rules/lang/`, `translation.md` | `~/.claude/rules/` | Claude Code는 해당 파일을 다룰 때 자동으로, Codex는 공통 규칙의 표를 보고 읽음 |
+| `.claude/rules/`의 `code.md`, `writing-docs.md`, `lang/`, `translation.md` | `~/.claude/rules/` | Claude Code는 해당 파일을 다룰 때 자동으로, Codex는 공통 규칙의 표를 보고 읽음 |
 | `.agents/skills/` | `~/.agents/skills/`, `~/.claude/skills/` | 어느 프로젝트에서나 `new-project`, `update-docs` 등을 쓸 수 있음 |
 
 - 같은 이름의 파일은 덮어씁니다. 예전 방식의 사본(`~/.claude/rules/basics.md` 등 4개, `~/.claude/commands/`의 같은 이름 명령)은 claude-home에 있던 내용 그대로일 때만 지웁니다. 고쳤거나 이름만 같은 내 파일은 남기고 "확인 필요"로 알려 줍니다. 그 밖의 파일은 건드리지 않습니다.
