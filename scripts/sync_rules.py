@@ -9,6 +9,7 @@
 
 - 공통 규칙은 claude-home `AGENTS.md`의 common-rules 표시 사이 부분입니다. 대상 `AGENTS.md`에서는
   같은 표시 사이만 바꾸고, 표시가 둘 다 없으면 맨 아래에 붙입니다. 표시가 한쪽만 있으면 멈춥니다.
+- 코드·문서 작성 규칙(`.claude/rules/code.md`, `writing-docs.md`)은 모든 프로젝트에, 언어·번역 규칙은 고른 것만 넣습니다.
 - 훅 설정(`.claude/settings.json`, `.codex/hooks.json`)은 없을 때만 템플릿으로 만듭니다. 이미 있으면 덮어쓰지 않고,
   훅(agent_hooks.py)이 빠져 있으면 알립니다.
 - 스킬 원본은 `.agents/skills/`(Codex)이고, 같은 내용을 `.claude/skills/`(Claude Code)에도 둡니다.
