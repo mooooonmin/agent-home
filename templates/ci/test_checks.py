@@ -115,6 +115,42 @@ class RepoChecksTest(unittest.TestCase):
             self.assertEqual(len(errors), 1)
             self.assertIn("__pycache__", errors[0])
 
+    def test_Codex_한도를_넘는_AGENTS_md를_찾는다(self):
+        with TempRepo() as repo:
+            repo.write("AGENTS.md", "가" * 8000)  # 한글 한 글자 = 3바이트
+            repo.write("pkg/AGENTS.md", "가" * 4000)
+            errors = repo_checks.check_agents_md_size(repo.root, ["AGENTS.md", "pkg/AGENTS.md"])
+            self.assertEqual(len(errors), 1)
+            self.assertIn("pkg/AGENTS.md", errors[0])
+
+    def test_AGENTS_md를_가져오지_않는_CLAUDE_md를_찾는다(self):
+        with TempRepo() as repo:
+            repo.write("AGENTS.md", "# 안내\n")
+            repo.write("CLAUDE.md", "# 다른 지시\n")
+            repo.write("ok/AGENTS.md", "# 안내\n")
+            repo.write("ok/CLAUDE.md", "@AGENTS.md\n")
+            repo.write("solo/CLAUDE.md", "# AGENTS.md 없음\n")
+            files = ["AGENTS.md", "CLAUDE.md", "ok/AGENTS.md", "ok/CLAUDE.md", "solo/CLAUDE.md"]
+            errors = repo_checks.check_claude_imports_agents(repo.root, files)
+            self.assertEqual(len(errors), 1)
+            self.assertTrue(errors[0].startswith("CLAUDE.md:"))
+
+    def test_스킬_원본과_사본이_다르면_알린다(self):
+        with TempRepo() as repo:
+            repo.write(".agents/skills/a/SKILL.md", "원본\n")
+            repo.write(".claude/skills/a/SKILL.md", "고친 사본\n")
+            repo.write(".agents/skills/b/SKILL.md", "원본\n")
+            repo.write(".claude/skills/c/SKILL.md", "원본 없음\n")
+            files = [".agents/skills/a/SKILL.md", ".claude/skills/a/SKILL.md", ".agents/skills/b/SKILL.md",
+                     ".claude/skills/c/SKILL.md"]
+            errors = repo_checks.check_skill_mirror(repo.root, files)
+            self.assertEqual(len(errors), 3)
+
+    def test_한쪽_스킬_폴더만_쓰면_검사하지_않는다(self):
+        with TempRepo() as repo:
+            repo.write(".agents/skills/a/SKILL.md", "원본\n")
+            self.assertEqual(repo_checks.check_skill_mirror(repo.root, [".agents/skills/a/SKILL.md"]), [])
+
     def test_깨끗한_저장소는_통과한다(self):
         with TempRepo() as repo:
             repo.write("README.md", "# 프로젝트\n\n[문서](docs/guide.md)\n")

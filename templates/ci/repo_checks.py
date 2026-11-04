@@ -9,6 +9,8 @@
 - 셸 스크립트 문법: `bash -n` (bash가 없으면 건너뜀)
 - 문서 내부 링크·이미지·앵커: check_doc_links.py
 - 로컬 변경의 공백 오류: `git diff HEAD --check` (CI의 깨끗한 checkout에서는 할 일이 없음)
+- 에이전트 지시 파일: AGENTS.md가 Codex 기본 읽기 한도(32KiB)를 넘는지, 같은 폴더의 CLAUDE.md가
+  `@AGENTS.md`로 가져오는지, `.agents/skills/`(원본)와 `.claude/skills/`(사본)가 같은지
 
 표준 라이브러리만 씁니다. 이 파일과 check_doc_links.py를 같은 폴더(보통 scripts/)에 둡니다.
 
@@ -35,6 +37,10 @@ GENERATED_SUFFIXES = {".pyc", ".pyo", ".class", ".log"}
 REQUIREMENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._\-]*(\[[^\]]+\])?\s*==\s*[^\s;=]+(\s*;.*)?$")
 LATEST_TAG = re.compile(r"(?:image:\s*\S+:latest\b|^\s*FROM\s+\S+:latest\b|\btag:\s*[\"']?latest[\"']?\s*$)", re.I)
 CONFLICT = re.compile(r"^(<{7}|>{7}) ")
+# Codex가 AGENTS.md를 읽는 기본 한도(project_doc_max_bytes). 루트부터 작업 폴더까지 합한 크기입니다.
+CODEX_DOC_MAX_BYTES = 32 * 1024
+SKILL_SOURCE_DIR = ".agents/skills/"
+SKILL_MIRROR_DIR = ".claude/skills/"
 TEXT_SUFFIXES = {
     ".md", ".py", ".js", ".ts", ".tsx", ".jsx", ".java", ".kt", ".go", ".dart", ".rs", ".sh",
     ".yml", ".yaml", ".json", ".toml", ".gradle", ".txt", ".html", ".css", ".xml", ".ps1",
@@ -156,6 +162,51 @@ def check_whitespace(root: Path) -> list[str]:
     return []
 
 
+def check_agents_md_size(root: Path, files: list[str]) -> list[str]:
+    docs = [rel for rel in files if Path(rel).name == "AGENTS.md"]
+    sizes = {str(Path(rel).parent): (root / rel).stat().st_size for rel in docs}
+    errors = []
+    for rel in docs:
+        folder = Path(rel).parent
+        chain = [folder, *folder.parents]
+        total = sum(sizes.get(str(level), 0) for level in chain)
+        if total > CODEX_DOC_MAX_BYTES:
+            errors.append(
+                f"{rel}: 루트부터 이 폴더까지 AGENTS.md 합계 {total}바이트가 Codex 기본 한도 "
+                f"{CODEX_DOC_MAX_BYTES}바이트를 넘어 뒷부분이 잘립니다 (자세한 내용은 담당 문서로 옮기고 링크)"
+            )
+    return errors
+
+
+def check_claude_imports_agents(root: Path, files: list[str]) -> list[str]:
+    errors = []
+    for rel in files:
+        if Path(rel).name != "CLAUDE.md":
+            continue
+        agents = Path(rel).with_name("AGENTS.md").as_posix()
+        if agents in files and "@AGENTS.md" not in read_lines(root / rel):
+            errors.append(
+                f"{rel}: CLAUDE.md가 있으면 Claude Code는 AGENTS.md를 읽지 않습니다 (맨 위에 `@AGENTS.md` 줄 추가)"
+            )
+    return errors
+
+
+def check_skill_mirror(root: Path, files: list[str]) -> list[str]:
+    source = {rel[len(SKILL_SOURCE_DIR):] for rel in files if rel.startswith(SKILL_SOURCE_DIR)}
+    mirror = {rel[len(SKILL_MIRROR_DIR):] for rel in files if rel.startswith(SKILL_MIRROR_DIR)}
+    if not source or not mirror:
+        return []
+    errors = []
+    for rel in sorted(source | mirror):
+        if rel not in mirror:
+            errors.append(f"{SKILL_MIRROR_DIR}{rel}: 없습니다 (원본 {SKILL_SOURCE_DIR}{rel}을 그대로 복사)")
+        elif rel not in source:
+            errors.append(f"{SKILL_MIRROR_DIR}{rel}: 원본 {SKILL_SOURCE_DIR}{rel}이 없습니다 (원본에 만들거나 사본을 지움)")
+        elif (root / SKILL_SOURCE_DIR / rel).read_bytes() != (root / SKILL_MIRROR_DIR / rel).read_bytes():
+            errors.append(f"{SKILL_MIRROR_DIR}{rel}: 원본과 다릅니다 (원본 {SKILL_SOURCE_DIR}{rel}을 고친 뒤 그대로 복사)")
+    return errors
+
+
 def run_all(root: Path, excludes: list[str], docs_excludes: list[str] | None = None) -> list[str]:
     files = [f for f in list_files(root) if not excluded(f, excludes)]
     docs_excludes = excludes + (docs_excludes or [])
@@ -167,6 +218,9 @@ def run_all(root: Path, excludes: list[str], docs_excludes: list[str] | None = N
         *check_shell_syntax(root, files),
         *check_doc_links(root, docs_excludes),
         *check_whitespace(root),
+        *check_agents_md_size(root, files),
+        *check_claude_imports_agents(root, files),
+        *check_skill_mirror(root, files),
     ]
 
 

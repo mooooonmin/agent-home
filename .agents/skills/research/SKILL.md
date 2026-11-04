@@ -1,9 +1,12 @@
 ---
+name: research
 description: 주제를 조사해 notes/에 정리 (클라우드에 맡기기 좋은 작업)
 argument-hint: <조사할 주제>
 ---
 
 주제: $ARGUMENTS
+
+`$ARGUMENTS`가 비어 있거나 그대로 보이면(Codex 등) 사용자 메시지에서 찾고, 없으면 묻습니다.
 
 1. 주제를 조사하고 믿을 만한 출처(공식 문서, 원저자, 논문)를 우선합니다.
 2. `notes/YYYY-MM-DD-<짧은-주제>.md`로 저장합니다. 구성은 다음과 같습니다.

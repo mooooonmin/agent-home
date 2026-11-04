@@ -36,7 +36,7 @@ def list_markdown(root, excludes):
     except (OSError, subprocess.CalledProcessError):
         files = []
         for d, dirs, names in os.walk(root):
-            dirs[:] = [x for x in dirs if not x.startswith(".") or x == ".claude"]
+            dirs[:] = [x for x in dirs if not x.startswith(".") or x in (".claude", ".agents")]
             files += [os.path.relpath(os.path.join(d, n), root) for n in names if n.endswith(".md")]
     norm = [f.replace("\\", "/") for f in files]
     return [f for f in norm if not any(f == e or f.startswith(e.rstrip("/") + "/") for e in excludes)]

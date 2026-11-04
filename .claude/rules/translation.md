@@ -29,5 +29,5 @@ paths:
 
 ## 저작권 표기
 
-- 새 번역 저장소에는 `NOTICE`(원본 저장소, 기준 커밋, 라이선스, 변경 사항)와 README 상단 안내를 넣습니다. 템플릿: `templates/translation-repo/`
+- 새 번역 저장소에는 `NOTICE`(원본 저장소, 기준 커밋, 라이선스, 변경 사항)와 README 상단 안내를 넣습니다. 템플릿: claude-home의 `templates/translation-repo/`
 - 원본 라이선스가 번역을 허용하는지 먼저 확인합니다.

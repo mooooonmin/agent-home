@@ -7,7 +7,7 @@ paths:
 
 # Dart / Flutter 규칙
 
-기준: [Effective Dart](https://dart.dev/effective-dart). 린트는 `flutter_lints`에 엄격 모드를 더하고, 포맷은 `dart format`에 맡깁니다. 템플릿: `templates/lint/dart/analysis_options.yaml`
+기준: [Effective Dart](https://dart.dev/effective-dart). 린트는 `flutter_lints`에 엄격 모드를 더하고, 포맷은 `dart format`에 맡깁니다. 템플릿: claude-home의 `templates/lint/dart/analysis_options.yaml`
 
 ## 기본
 
