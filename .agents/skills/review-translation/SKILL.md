@@ -1,9 +1,12 @@
 ---
+name: review-translation
 description: 번역본을 원문과 대조해 검토하고 문제 목록을 만듦
 argument-hint: <장 번호 또는 파일 경로>
 ---
 
 대상: $ARGUMENTS
+
+`$ARGUMENTS`가 비어 있거나 그대로 보이면(Codex 등) 사용자 메시지에서 찾고, 없으면 묻습니다.
 
 번역본을 원문과 대조해 검토합니다. 파일은 고치지 말고 문제 목록만 만듭니다.
 

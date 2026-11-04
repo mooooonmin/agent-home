@@ -1,9 +1,12 @@
 ---
+name: translate-chapter
 description: 번역 저장소에서 장 하나를 번역하고 커밋까지 준비
 argument-hint: <장 번호 또는 파일·폴더 경로>
 ---
 
 대상: $ARGUMENTS
+
+`$ARGUMENTS`가 비어 있거나 그대로 보이면(Codex 등) 사용자 메시지에서 찾고, 없으면 묻습니다.
 
 다음 순서로 번역합니다.
 

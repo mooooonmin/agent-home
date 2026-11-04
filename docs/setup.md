@@ -18,9 +18,10 @@ claude-home을 처음 받아서 로컬 PC와 클라우드 세션에서 쓰기까
 |---|---|---|---|
 | Git | 저장소 받기, 커밋 | `git --version` | `winget install Git.Git` |
 | GitHub CLI | 저장소 받기·만들기, PR | `gh --version` | `winget install GitHub.cli` |
-| PowerShell 7 | `scripts/*.ps1` 실행 | `pwsh --version` | `winget install Microsoft.PowerShell` |
-| Python 3.11 이상 | 저장소 검사 스크립트 | `python --version` | `winget install Python.Python.3.12` |
-| Claude Code | 규칙과 명령어 사용 | 데스크톱 앱 또는 `claude --version` | [Claude Code 문서](https://code.claude.com/docs) |
+| PowerShell 7 | `scripts/new-project.ps1` 실행 | `pwsh --version` | `winget install Microsoft.PowerShell` |
+| Python 3.11 이상 | 규칙 동기화(`sync_rules.py`), 저장소 검사 | `python --version` | `winget install Python.Python.3.12` |
+| Claude Code | 규칙과 스킬 사용 | 데스크톱 앱 또는 `claude --version` | [Claude Code 문서](https://code.claude.com/docs) |
+| Codex (함께 쓸 때) | 규칙과 스킬 사용 | `codex --version` | Codex 공식 안내 |
 
 Windows에 기본으로 있는 PowerShell 5(`powershell`)가 아니라 **PowerShell 7(`pwsh`)** 이 필요합니다.
 
@@ -36,7 +37,7 @@ gh auth status
 
 ## 2. 저장소 받기
 
-다른 프로젝트들과 **같은 상위 폴더**에 받습니다. `/new-project`는 claude-home 옆에 새 프로젝트를 만들기 때문입니다.
+다른 프로젝트들과 **같은 상위 폴더**에 받습니다. `new-project` 스킬은 claude-home 옆에 새 프로젝트를 만들기 때문입니다.
 
 ```bash
 gh repo clone mooooonmin/claude-home C:/00.PROJECT/claude-home
@@ -44,26 +45,29 @@ gh repo clone mooooonmin/claude-home C:/00.PROJECT/claude-home
 
 ## 3. 로컬 PC에 규칙 적용
 
-규칙과 명령어를 `~/.claude/`로 복사하면 이 PC의 **모든 프로젝트**에서 Claude Code가 같은 규칙을 따릅니다. 먼저 미리보기로 복사할 파일을 확인합니다.
+공통 규칙과 스킬을 사용자 설정에 넣으면 이 PC의 **모든 프로젝트**에서 Claude Code와 Codex가 같은 규칙을 따릅니다. 먼저 미리보기로 바뀔 파일을 확인합니다.
 
 ```bash
-pwsh -File C:/00.PROJECT/claude-home/scripts/sync-local.ps1 -WhatIf
+python -I C:/00.PROJECT/claude-home/scripts/sync_rules.py --user
 ```
 
-문제없으면 실제로 복사합니다.
+문제없으면 실제로 반영합니다.
 
 ```bash
-pwsh -File C:/00.PROJECT/claude-home/scripts/sync-local.ps1
+python -I C:/00.PROJECT/claude-home/scripts/sync_rules.py --user --apply
 ```
 
-| 복사되는 것 | 위치 | 효과 |
+| 넣는 것 | 위치 | 효과 |
 |---|---|---|
-| `.claude/rules/` | `~/.claude/rules/` | 모든 프로젝트에 규칙 적용 (언어별 규칙은 해당 언어 파일을 다룰 때만) |
-| `.claude/commands/` | `~/.claude/commands/` | 어느 프로젝트에서나 `/update-docs`, `/new-project` 등을 쓸 수 있음 |
+| 공통 규칙 (`AGENTS.md`의 표시 사이) | `~/.claude/rules/claude-home.md` | Claude Code: 모든 프로젝트에 적용 |
+| 같은 공통 규칙 | `~/.codex/AGENTS.md`의 같은 표시 사이 | Codex: 모든 프로젝트에 적용. 표시 밖에 적어 둔 내 지시는 그대로 둠 |
+| `.claude/rules/lang/`, `translation.md` | `~/.claude/rules/` | Claude Code는 해당 파일을 다룰 때 자동으로, Codex는 공통 규칙의 표를 보고 읽음 |
+| `.agents/skills/` | `~/.agents/skills/`, `~/.claude/skills/` | 어느 프로젝트에서나 `new-project`, `update-docs` 등을 쓸 수 있음 |
 
-- 같은 이름의 파일은 덮어쓰고, `~/.claude/`에만 있는 파일은 지우지 않습니다.
-- claude-home 안에서 작업하면 같은 규칙이 두 번(개인 설정 + 저장소) 읽힙니다. 내용이 같아서 문제는 없습니다.
-- 번역 규칙(`translation.md`)도 복사되지만 `.md`, `.ipynb` 파일을 다룰 때만 읽히고, 저장소에 `TRANSLATION.md`가 있으면 그쪽이 우선합니다.
+- 같은 이름의 파일은 덮어씁니다. 예전 방식의 사본(`~/.claude/rules/basics.md` 등 4개, `~/.claude/commands/`의 같은 이름 명령)은 지웁니다. 그 밖의 파일은 건드리지 않습니다.
+- `CLAUDE_CONFIG_DIR`, `CODEX_HOME` 환경 변수를 쓰고 있으면 그 폴더에 넣습니다.
+- claude-home이나 claude-home으로 만든 프로젝트에서는 같은 공통 규칙이 두 번(사용자 설정 + 저장소) 읽힙니다. 내용이 같아서 문제는 없습니다.
+- 번역 규칙은 `.md`, `.ipynb` 파일을 다룰 때만 읽히고, 저장소에 `TRANSLATION.md`가 있으면 그쪽이 우선합니다.
 
 ## 4. 설정 확인
 
@@ -71,11 +75,12 @@ pwsh -File C:/00.PROJECT/claude-home/scripts/sync-local.ps1
 
 | 확인 | 명령·방법 | 기대 결과 |
 |---|---|---|
-| 규칙 복사 | `ls ~/.claude/rules ~/.claude/commands` | `basics.md`, `coding.md`, `new-project.md` 등이 보임 |
-| 검사 도구 | claude-home에서 `python -I -m unittest discover -s templates/ci -p "test_*.py"` | `OK` |
+| 규칙 복사 | `ls ~/.claude/rules ~/.claude/skills ~/.agents/skills` | `claude-home.md`, `lang/`, `new-project/` 등이 보임 |
+| Codex 규칙 | `~/.codex/AGENTS.md` 열기 | `claude-home:common-rules` 표시 사이에 공통 규칙이 있음 |
+| 검사·동기화 도구 | claude-home에서 `python -I -m unittest discover -s templates/ci -p "test_*.py"`와 `python -I -m unittest discover -s scripts -p "test_*.py"` | 둘 다 `OK` |
 | 저장소 검사 | claude-home에서 `python -I templates/ci/repo_checks.py --docs-exclude templates` | `문제 0개` |
 | 새 프로젝트 미리보기 | claude-home에서 `pwsh -File scripts/new-project.ps1 -Name test-app -Language python -WhatIf` | 만들 파일 목록만 나오고 폴더는 생기지 않음 |
-| 규칙 적용 | 아무 프로젝트에서 Claude Code를 열고 "지금 적용된 규칙 파일 목록 알려줘"라고 묻기 | `~/.claude/rules/`의 파일들이 언급됨 |
+| 규칙 적용 | 아무 프로젝트에서 Claude Code와 Codex를 각각 열고 "지금 적용된 규칙 파일 목록 알려줘"라고 묻기 | Claude Code는 `~/.claude/rules/`, Codex는 `~/.codex/AGENTS.md`가 언급됨 |
 
 ## 5. 클라우드 세션 설정
 
@@ -115,7 +120,7 @@ https://claude.ai/code?repositories=mooooonmin/claude-home&prompt=/research%20�
 |---|---|
 | 조사·메모 (`/research`, 결과는 `notes/`) | `claude-home` |
 | 규칙·템플릿 고치기, `/update-docs` | `claude-home` |
-| 특정 프로젝트 작업 | 그 프로젝트 저장소. `.claude/rules/`와 `CLAUDE.md`가 있어야 규칙이 적용됩니다(`/new-project`로 만든 프로젝트에는 이미 있음) |
+| 특정 프로젝트 작업 | 그 프로젝트 저장소. 공통 규칙이 들어간 `AGENTS.md`와 `@AGENTS.md` 줄이 있는 `CLAUDE.md`가 있어야 규칙이 적용됩니다(`new-project`로 만든 프로젝트에는 이미 있음) |
 
 저장소를 여러 개 함께 넣을 수도 있지만, 그때는 각 저장소의 `.claude/settings.json` 권한 규칙과 훅이 적용되지 않습니다. 보통은 저장소 하나로 엽니다.
 
@@ -123,20 +128,20 @@ https://claude.ai/code?repositories=mooooonmin/claude-home&prompt=/research%20�
 
 | 적용됨 | 적용 안 됨 |
 |---|---|
-| 저장소의 `CLAUDE.md`, `.claude/rules/` (언어별 규칙 포함) | 내 PC의 `~/.claude/` (규칙, 명령어, 설정) |
-| `.claude/commands/` (`/research`, `/update-docs` 등) | `.claude/settings.local.json` |
+| 저장소의 `CLAUDE.md`와 그 안의 `@AGENTS.md`, `.claude/rules/` (언어별 규칙) | 내 PC의 `~/.claude/`, `~/.codex/` (규칙, 스킬, 설정) |
+| `.claude/skills/` (`/research`, `/update-docs` 등) | `.claude/settings.local.json` |
 | `.claude/settings.json`의 권한 규칙과 훅 (저장소 하나일 때) | 플러그인, 내 PC에 추가한 MCP 서버 |
 
 ### 클라우드에서 하지 않는 것
 
-- **`/new-project`**: `pwsh`가 없고, 세션은 넣은 저장소 밖에 새 저장소를 만들지 않습니다. 새 프로젝트는 로컬에서 만듭니다.
-- **`sync-local.ps1`**: 내 PC의 `~/.claude/`를 위한 스크립트라 클라우드와 상관없습니다.
+- **`new-project`**: `pwsh`가 없고, 세션은 넣은 저장소 밖에 새 저장소를 만들지 않습니다. 새 프로젝트는 로컬에서 만듭니다.
+- **`sync_rules.py --user`**: 내 PC의 사용자 설정을 위한 명령이라 클라우드와 상관없습니다.
 
 ### 결과 받기
 
 1. 작업이 끝나면 Claude가 작업 브랜치를 GitHub에 올립니다.
 2. **Changes** 카드에서 변경 내용을 보고 **Create PR**로 PR을 만듭니다.
-3. PR은 직접 확인하고 병합합니다([커밋과 PR 규칙](../.claude/rules/git.md)).
+3. PR은 직접 확인하고 병합합니다([커밋과 PR 규칙](../AGENTS.md#커밋과-pr-규칙)).
 4. 클라우드는 브랜치를 지울 수 없습니다. 병합 후 GitHub에서 지우거나, 저장소 설정의 "Automatically delete head branches"를 켭니다.
 
 로컬과 오가기:
@@ -160,18 +165,22 @@ claude-home이 규칙의 원본입니다. 규칙은 항상 여기서 고치고 �
    git -C C:/00.PROJECT/claude-home pull
    ```
    ```bash
-   pwsh -File C:/00.PROJECT/claude-home/scripts/sync-local.ps1
+   python -I C:/00.PROJECT/claude-home/scripts/sync_rules.py --user --apply
    ```
-3. 클라우드에서 쓰는 프로젝트에는 바뀐 규칙 파일을 그 저장소의 `.claude/rules/`로 복사해 커밋합니다. 자동으로 따라가지 않습니다.
+3. 프로젝트에도 반영합니다. 자동으로 따라가지 않으므로, 프로젝트마다 미리보기로 확인한 뒤 `--apply`로 반영하고 그 저장소에서 커밋합니다.
+   ```bash
+   python -I C:/00.PROJECT/claude-home/scripts/sync_rules.py --target C:/00.PROJECT/my-app
+   ```
 4. 다른 PC에서는 2번만 하면 됩니다.
 
 ### 원본과 사본
 
-- 프로젝트 저장소의 `.claude/rules/`는 `/new-project`나 직접 복사로 넣은 **사본**이고, 원본과 연결되어 있지 않습니다.
+- 프로젝트 `AGENTS.md`의 공통 규칙 부분, `.claude/rules/`, 스킬은 `new-project`나 `sync_rules.py`로 넣은 **사본**이고, 원본과 연결되어 있지 않습니다.
   - claude-home을 고쳐도 프로젝트는 그대로입니다(위 3번).
   - 프로젝트에서 고친 규칙은 그 프로젝트에만 적용되고 claude-home은 바뀌지 않습니다. 모든 프로젝트에 적용할 규칙은 claude-home에서 고칩니다.
+  - 프로젝트만의 규칙은 `AGENTS.md`의 공통 규칙 표시 **밖**(위쪽 저장소 안내)에 적습니다. 표시 사이는 다음 동기화 때 원본으로 덮어씁니다.
 - 새 프로젝트를 만들기 전에는 위 2번의 `git pull`을 먼저 합니다. `scripts/new-project.ps1`은 GitHub이 아니라 이 PC의 claude-home 폴더에서 파일을 복사합니다.
-- 로컬 PC에서는 프로젝트의 `.claude/rules/`와 `~/.claude/rules/`(`sync-local.ps1`로 복사한 원본)가 **함께** 읽힙니다. 어느 쪽도 다른 쪽을 덮어쓰지 않고, 둘이 충돌하면 Claude가 어느 쪽을 따를지 정해지지 않습니다([공식 문서: User-level rules](https://code.claude.com/docs/en/memory)). 그래서 프로젝트 규칙은 원본에 **덧붙이는** 내용으로 쓰고, 원본과 반대되는 규칙이 필요하면 claude-home을 고칠지 먼저 검토합니다.
+- 로컬 PC에서는 프로젝트의 규칙과 사용자 설정(`~/.claude/rules/`, `~/.codex/AGENTS.md`)의 원본이 **함께** 읽힙니다. 어느 쪽도 다른 쪽을 덮어쓰지 않고, 둘이 충돌하면 Claude가 어느 쪽을 따를지 정해지지 않습니다([공식 문서: User-level rules](https://code.claude.com/docs/en/memory)). 그래서 프로젝트 규칙은 원본에 **덧붙이는** 내용으로 쓰고, 원본과 반대되는 규칙이 필요하면 claude-home을 고칠지 먼저 검토합니다.
 - 클라우드 세션에서는 [세션에 넣은 저장소의 규칙만](#클라우드에서-적용되는-것) 읽힙니다.
 
 ## 문제 해결
@@ -183,7 +192,9 @@ claude-home이 규칙의 원본입니다. 규칙은 항상 여기서 고치고 �
 | `git init`이 실패했다는 경고 (`Filename too long`) | Windows 경로 길이 제한(260자) | 더 짧은 경로에 만들거나 `git config --global core.longpaths true` |
 | 한글이 깨져 보임 | 터미널 인코딩 | PowerShell 7을 쓰고, 파일은 UTF-8로 저장 |
 | `gh` 명령이 권한 오류 | 로그인 안 됨 또는 권한 부족 | `gh auth login`, 비공개 저장소는 `repo` 권한 필요 |
-| 클라우드 세션이 규칙을 안 따름 | 고른 저장소에 규칙이 없음 | 그 저장소에 `.claude/rules/`와 `CLAUDE.md`가 있는지 확인 |
+| 클라우드 세션이 규칙을 안 따름 | 고른 저장소에 규칙이 없거나 `CLAUDE.md`가 `AGENTS.md`를 가져오지 않음 | 그 저장소 `AGENTS.md`에 공통 규칙 표시가 있고 `CLAUDE.md`에 `@AGENTS.md` 줄이 있는지 확인 (`repo_checks.py`가 뒤쪽을 검사) |
+| Codex가 규칙 뒷부분을 모름 | `AGENTS.md`가 Codex 기본 한도(32KiB)를 넘어 잘림 | `repo_checks.py`로 크기를 확인하고 자세한 내용을 담당 문서로 옮김 |
 | 클라우드 저장소 목록에 `claude-home`이 없음 | 비공개 저장소 접근 권한 없음 | Claude GitHub App 설치 시 그 저장소를 포함하거나 `/web-setup` |
 | 클라우드에서 `flutter`나 `pwsh`를 찾을 수 없음 | 미리 설치되어 있지 않음 | 그 프로젝트용 환경의 Setup script에 설치 명령 추가 |
-| 규칙을 고쳤는데 로컬에 반영 안 됨 | 동기화를 안 함 | `git pull` 후 `sync-local.ps1` 다시 실행 |
+| 규칙을 고쳤는데 로컬에 반영 안 됨 | 동기화를 안 함 | `git pull` 후 `sync_rules.py --user --apply` 다시 실행 |
+| 스킬 사본이 원본과 다르다는 검사 오류 | `.agents/skills/`만 고치고 `.claude/skills/`에 복사하지 않음 | claude-home에서는 `sync_rules.py --mirror --apply`, 프로젝트에서는 원본 파일을 그대로 복사 |

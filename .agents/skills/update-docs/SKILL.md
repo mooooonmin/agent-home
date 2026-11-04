@@ -1,14 +1,17 @@
 ---
+name: update-docs
 description: 최근 코드 변경과 문서를 비교해 낡은 문서를 찾아 고침
 argument-hint: "[비교 기준: 커밋, 태그, 브랜치 또는 기간. 비우면 지난 2주]"
 ---
 
 기준: $ARGUMENTS (비어 있으면 `--since="2 weeks ago"`)
 
+`$ARGUMENTS`가 그대로 보이면(Codex 등) 사용자 메시지에서 기준을 찾고, 없으면 위 기본값을 씁니다.
+
 문서가 코드와 어긋난 곳을 찾아 고칩니다.
 
 1. 기준 이후 바뀐 코드 파일을 확인합니다(`git log`, `git diff --stat`).
-2. 저장소 문서(`README.md`, `docs/`, `CLAUDE.md`, `CHANGELOG.md`, 코드의 문서 주석)를 읽습니다.
+2. 저장소 문서(`README.md`, `docs/`, `AGENTS.md`, `CLAUDE.md`, `CHANGELOG.md`, 코드의 문서 주석)를 읽습니다.
 3. 다음과 같은 어긋남을 찾습니다.
    - 문서에 적힌 명령어, 파일 경로, 설정 키, 환경 변수, 함수 이름이 더는 없거나 바뀐 곳
    - 새로 생긴 기능, 옵션, 폴더가 문서에 없는 곳
