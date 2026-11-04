@@ -14,6 +14,7 @@ claude-home/
 ├─ AGENTS.md                     # 이 저장소 안내 + 공통 규칙(소통·작업 방식, 코딩, 문서, 커밋과 PR)의 원본
 ├─ CLAUDE.md                     # @AGENTS.md (Claude Code가 AGENTS.md를 읽게 함)
 ├─ .agents/skills/               # 스킬 원본: new-project, research, update-docs, translate-chapter, review-translation (Codex)
+├─ .github/                      # 이 저장소 CI, PR 템플릿(새 프로젝트에도 복사)
 ├─ .claude/
 │  ├─ settings.json              # 권한 (비밀값 파일 읽기 금지)
 │  ├─ skills/                    # .agents/skills와 같은 사본 (Claude Code)
@@ -25,7 +26,6 @@ claude-home/
 ├─ templates/
 │  ├─ AGENTS.project.md          # 각 프로젝트의 AGENTS.md 저장소 안내 부분
 │  ├─ CLAUDE.project.md          # 각 프로젝트의 CLAUDE.md (@AGENTS.md)
-│  ├─ pr-body.md
 │  ├─ lint/                      # 언어별 린트·포맷·계층 검사 설정, .editorconfig, .gitattributes, .gitignore
 │  ├─ docs/                      # README, 폴더 README, CHANGELOG, ADR, 실행 계획·개선 목록 템플릿
 │  ├─ ci/                        # 저장소 검사 스크립트와 테스트, GitHub Actions (공통 + lang/ 언어별 빌드·테스트)

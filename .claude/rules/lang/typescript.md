@@ -7,7 +7,7 @@ paths:
 
 # JavaScript / TypeScript 규칙
 
-기준: 새 코드는 **TypeScript strict 모드**로 씁니다. 린트는 ESLint + typescript-eslint, 포맷은 Prettier에 맡깁니다. 템플릿: `templates/lint/typescript/`
+기준: 새 코드는 **TypeScript strict 모드**로 씁니다. 린트는 ESLint + typescript-eslint, 포맷은 Prettier에 맡깁니다. 템플릿: claude-home의 `templates/lint/typescript/`
 
 클린 코드 원칙은 직접 번역한 [clean-code-javascript-ko](https://github.com/mooooonmin/clean-code-javascript-ko)를 따릅니다.
 

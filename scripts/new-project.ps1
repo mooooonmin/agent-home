@@ -88,6 +88,7 @@ if (-not $Translation) {
 }
 Write-File 'AGENTS.md' $agents
 Copy-File 'templates/CLAUDE.project.md' 'CLAUDE.md'
+Copy-File '.github/pull_request_template.md' '.github/pull_request_template.md'
 
 $readme = (Read-Template 'templates/docs/README.md').Replace('<프로젝트 이름>', $Name).Replace('<무엇을 하는 프로젝트인지 한두 문장>', $Description)
 Write-File 'README.md' $readme
@@ -130,6 +131,16 @@ $Description
 
 뼈대, 검사, 문서를 갖추고 CI가 통과하는 첫 동작 버전을 만듭니다.
 
+## 현재 상태
+
+다음 세션이 이 부분만 읽고 이어 갈 수 있게, 세션을 끝낼 때마다 덮어씁니다.
+
+- 마지막 커밋: 없음
+- 검사·테스트: 미확인
+- 진행 중: 1단계
+- 다음 할 일: 언어 공식 도구로 뼈대 생성
+- 막힌 것: 없음
+
 ## 범위
 
 - 하는 것: 언어 공식 도구로 뼈대 생성, 린트·포맷·계층 검사 적용, README·AGENTS.md 채우기, 기술 선택 ADR, 첫 기능 하나
@@ -140,7 +151,7 @@ $Description
 - [ ] 1. 언어 공식 도구로 뼈대 생성 — 완료 조건: 빌드·테스트 명령이 로컬에서 동작
 - [ ] 2. 린트·포맷·계층 검사 설정 적용 — 완료 조건: 포맷·린트 명령이 통과
 - [ ] 3. 기술 선택을 ``docs/adr/0001-*.md``로 기록 — 완료 조건: 채택 상태의 ADR
-- [ ] 4. README 시작하기와 AGENTS.md 명령어·구조 채우기 — 완료 조건: 자리표시(``<...>``) 없음
+- [ ] 4. README 시작하기와 AGENTS.md 명령어·동작 확인·구조 채우기 — 완료 조건: 자리표시(``<...>``) 없음
 - [ ] 5. 첫 기능 하나와 테스트 — 완료 조건: 테스트 통과
 - [ ] 6. GitHub 저장소에 올리고 CI 통과 — 완료 조건: ``checks``와 ``$Language`` 워크플로 성공
 

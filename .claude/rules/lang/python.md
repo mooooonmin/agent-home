@@ -7,7 +7,7 @@ paths:
 
 # Python 규칙
 
-기준: [PEP 8](https://peps.python.org/pep-0008/). 린트와 포맷은 [ruff](https://docs.astral.sh/ruff/)에 맡깁니다. 템플릿: `templates/lint/python/ruff.toml`
+기준: [PEP 8](https://peps.python.org/pep-0008/). 린트와 포맷은 [ruff](https://docs.astral.sh/ruff/)에 맡깁니다. 템플릿: claude-home의 `templates/lint/python/ruff.toml`
 
 ## 기본
 
@@ -24,7 +24,7 @@ paths:
 
 ## 구조
 
-- 계층이 있는 프로젝트는 import-linter로 의존 방향을 강제합니다. 템플릿: `templates/lint/python/importlinter.toml`
+- 계층이 있는 프로젝트는 import-linter로 의존 방향을 강제합니다. 템플릿: claude-home의 `templates/lint/python/importlinter.toml`
 
 ## 환경과 의존성
 

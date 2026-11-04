@@ -6,7 +6,7 @@ paths:
 
 # Go 규칙
 
-기준: [Effective Go](https://go.dev/doc/effective_go)와 [Go Code Review Comments](https://go.dev/wiki/CodeReviewComments). 포맷은 `gofmt`/`goimports`, 린트는 golangci-lint에 맡깁니다. 템플릿: `templates/lint/go/.golangci.yml`
+기준: [Effective Go](https://go.dev/doc/effective_go)와 [Go Code Review Comments](https://go.dev/wiki/CodeReviewComments). 포맷은 `gofmt`/`goimports`, 린트는 golangci-lint에 맡깁니다. 템플릿: claude-home의 `templates/lint/go/.golangci.yml`
 
 ## 기본
 

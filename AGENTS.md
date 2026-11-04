@@ -65,6 +65,14 @@ Codex는 이 파일을 직접 읽고, Claude Code는 `CLAUDE.md`의 `@AGENTS.md`
 - 큰 작업은 시작 전에 계획을 짧게 정리하고, 끝나면 무엇을 바꿨는지 요약합니다.
 - 기존 파일의 형식(제목 수준, 표, 링크 방식)을 먼저 확인하고 그대로 따릅니다.
 
+### 세션 시작과 끝
+
+다음 세션(사람이든 다른 에이전트든)이 대화 기록 없이 이어 갈 수 있게 합니다.
+
+- **시작**: `git status`와 `git log --oneline -10`으로 최근 작업을 보고, `docs/exec-plans/active/`에 계획이 있으면 "현재 상태"를 읽습니다. 새 작업 전에 저장소 안내의 테스트 명령으로 기존 기능이 도는지 먼저 확인합니다.
+- **진행**: 한 번에 한 가지(기능 하나, 단계 하나)만 끝까지 합니다.
+- **끝**: 검사·테스트를 돌리고, 계획이 있으면 "현재 상태"를 고친 뒤 커밋합니다. 확인하지 못한 것은 "미확인"으로 남깁니다.
+
 ### 상태를 정확히 말하기
 
 다음 상태를 섞지 않고, 실제로 확인한 만큼만 말합니다.
@@ -76,6 +84,7 @@ Codex는 이 파일을 직접 읽고, Claude Code는 `CLAUDE.md`의 `@AGENTS.md`
 | 배포함 | 실제 환경에 반영되고 동작을 확인했다. 푸시나 병합은 배포가 아니다 |
 
 - 돌리지 못한 테스트, 건너뛴 확인은 "미확인"으로 적고 이유를 붙입니다. 실패나 건너뜀을 통과로 세지 않습니다.
+- 단위 테스트 통과만으로 "검증함"이라고 하지 않습니다. 사용자에게 보이는 동작을 바꿨으면 저장소 안내의 "동작 확인" 방법으로 실제로 실행해 보고, 실행한 명령과 출력(또는 화면)을 근거로 붙입니다.
 - 로컬 통과와 CI 통과를 구분합니다.
 
 ### 비밀값
@@ -111,11 +120,12 @@ Codex는 이 파일을 직접 읽고, Claude Code는 `CLAUDE.md`의 `@AGENTS.md`
 - **SOLID**: 클래스·모듈은 바뀌는 이유가 하나여야 합니다(단일 책임). 구체 구현보다 인터페이스에 의존하고, 의존성은 생성자로 주입합니다.
 - **합성 우선**: 상속보다 합성을 먼저 고려합니다.
 - **경계 분리**: 핵심 로직과 입출력(DB, 네트워크, 파일, UI)을 나눕니다. 핵심 로직은 입출력 없이 테스트할 수 있어야 합니다.
-- **규칙은 검사로 강제**: 계층 방향처럼 지켜야 할 구조 규칙은 문서에만 적지 말고 테스트로 만듭니다. 어기면 CI가 실패해야 합니다.
-  - Java: ArchUnit (`templates/lint/java/ArchitectureTest.java`)
-  - Python: import-linter (`templates/lint/python/importlinter.toml`)
-  - 저장소 공통 규칙(생성물 커밋, 버전 고정, `latest` 태그, 문서 링크): `templates/ci/repo_checks.py`
+- **규칙은 검사로 강제**: 계층 방향처럼 지켜야 할 구조 규칙은 문서에만 적지 말고 테스트로 만듭니다. 어기면 CI가 실패해야 합니다. 아래 템플릿은 claude-home 저장소에 있습니다.
+  - Java: ArchUnit (claude-home의 `templates/lint/java/ArchitectureTest.java`)
+  - Python: import-linter (claude-home의 `templates/lint/python/importlinter.toml`)
+  - 저장소 공통 규칙(생성물 커밋, 버전 고정, `latest` 태그, 문서 링크, 에이전트 지시 파일): `scripts/repo_checks.py` (원본: claude-home의 `templates/ci/`)
   - 검사 도구를 직접 만들었다면 그 도구에도 테스트를 붙입니다.
+- **두 번 지적하면 검사로**: 같은 지적(리뷰, 실수, 사용자의 정정)을 두 번 받으면 글로 된 규칙을 늘리지 말고 린트·테스트·검사 스크립트·훅으로 만듭니다. 당장 만들 수 없으면 `tech-debt-tracker.md`에 근거와 함께 적습니다.
 - **불변 우선**: 값을 바꾸기보다 새 값을 만듭니다. 공유 상태와 부수 효과는 최소화하고, 있으면 드러나게 둡니다.
 - 큰 설계 결정(라이브러리 선택, 구조 변경, 저장 방식)은 ADR로 남깁니다. 방법은 아래 문서 관리 규칙을 따릅니다.
 
@@ -156,7 +166,7 @@ Codex는 이 파일을 직접 읽고, Claude Code는 `CLAUDE.md`의 `@AGENTS.md`
 
 ### 폴더마다 짧은 README
 
-역할이 분명한 최상위 폴더(예: `scripts/`, `tools/`, 계층·모듈 폴더)에는 짧은 `README.md`를 둡니다. 폴더에 들어온 사람이나 AI가 바로 맥락을 잡게 하기 위함입니다. 템플릿: `templates/docs/folder-README.md`
+역할이 분명한 최상위 폴더(예: `scripts/`, `tools/`, 계층·모듈 폴더)에는 짧은 `README.md`를 둡니다. 폴더에 들어온 사람이나 AI가 바로 맥락을 잡게 하기 위함입니다. 템플릿: claude-home의 `templates/docs/folder-README.md`
 
 - 이 폴더의 **책임** (한두 문장)
 - 파일이나 하위 폴더별 용도 (표)
@@ -185,11 +195,11 @@ Codex는 이 파일을 직접 읽고, Claude Code는 `CLAUDE.md`의 `@AGENTS.md`
 
 ### 문서 구성
 
-새 프로젝트는 다음 구성으로 시작합니다. claude-home의 `new-project` 스킬(`scripts/new-project.ps1`)이 이 구성을 만들어 줍니다. 템플릿: `templates/docs/`
+새 프로젝트는 다음 구성으로 시작합니다. claude-home의 `new-project` 스킬(`scripts/new-project.ps1`)이 이 구성을 만들어 줍니다. 템플릿은 claude-home의 `templates/docs/`에 있습니다.
 
 - `README.md`: 무엇인지, 시작하기(설치·실행·테스트 명령), 구조, 문서 링크
-- `AGENTS.md`: 저장소 안내(작업별로 먼저 읽을 문서, 빌드·테스트 명령, 이 저장소만의 규칙)와 그 아래 공통 규칙. Codex가 직접 읽습니다. 템플릿: `templates/AGENTS.project.md`
-- `CLAUDE.md`: `@AGENTS.md` 한 줄과 Claude Code 전용 지시. 템플릿: `templates/CLAUDE.project.md`
+- `AGENTS.md`: 저장소 안내(작업별로 먼저 읽을 문서, 빌드·테스트 명령, 이 저장소만의 규칙)와 그 아래 공통 규칙. Codex가 직접 읽습니다. 템플릿: claude-home의 `templates/AGENTS.project.md`
+- `CLAUDE.md`: `@AGENTS.md` 한 줄과 Claude Code 전용 지시. 템플릿: claude-home의 `templates/CLAUDE.project.md`
 - `docs/adr/NNNN-제목.md`: 설계 결정 기록. 번호는 이어서 붙이고, 결정이 바뀌면 지우지 말고 새 ADR을 만든 뒤 예전 ADR의 상태를 "대체됨"으로 바꿉니다.
 - `CHANGELOG.md`: [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/) 형식
 - `docs/exec-plans/` (여러 세션에 걸친 작업이 있을 때만): 실행 계획과 개선 목록
@@ -213,7 +223,7 @@ Codex는 이 파일을 직접 읽고, Claude Code는 `CLAUDE.md`의 `@AGENTS.md`
 
 ### 자동 점검
 
-- CI에서 깨진 내부 링크·이미지·앵커를 막습니다(`repo_checks.py`에 포함). 템플릿: `templates/ci/`
+- CI에서 깨진 내부 링크·이미지·앵커를 막습니다(`repo_checks.py`에 포함). 템플릿: claude-home의 `templates/ci/`
 - 문서가 코드와 어긋났는지는 `update-docs` 스킬로 점검합니다.
 
 ## 커밋과 PR 규칙
@@ -261,6 +271,7 @@ type(scope): 구체적인 변경 결과
 ### 브랜치와 PR
 
 - 기본 브랜치에 바로 커밋하지 말고 작업 브랜치를 만듭니다. 예: `translate/ch09`, `fix/broken-links`
-- PR 본문은 `templates/pr-body.md`를 따릅니다.
+- PR 본문은 저장소의 `.github/pull_request_template.md`를 따릅니다. 없으면 위 커밋 본문 형식(변경 이유, 변경 내용, 검증, 문서)으로 씁니다.
+- PR을 만들기 전에 대화를 보지 않은 리뷰어로 변경을 검토합니다: Claude Code는 `/code-review`, Codex는 `/review`. 고친 것과 고치지 않은 이유를 PR 본문에 적습니다.
 - 클라우드 세션에서 만든 PR은 내가 직접 확인하고 병합합니다. 자동 병합은 켜지 않습니다.
 <!-- claude-home:common-rules:end -->
