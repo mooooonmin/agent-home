@@ -64,9 +64,9 @@ python -I C:/00.PROJECT/claude-home/scripts/sync_rules.py --user --apply
 | `.claude/rules/lang/`, `translation.md` | `~/.claude/rules/` | Claude Code는 해당 파일을 다룰 때 자동으로, Codex는 공통 규칙의 표를 보고 읽음 |
 | `.agents/skills/` | `~/.agents/skills/`, `~/.claude/skills/` | 어느 프로젝트에서나 `new-project`, `update-docs` 등을 쓸 수 있음 |
 
-- 같은 이름의 파일은 덮어씁니다. 예전 방식의 사본(`~/.claude/rules/basics.md` 등 4개, `~/.claude/commands/`의 같은 이름 명령)은 지웁니다. 그 밖의 파일은 건드리지 않습니다.
+- 같은 이름의 파일은 덮어씁니다. 예전 방식의 사본(`~/.claude/rules/basics.md` 등 4개, `~/.claude/commands/`의 같은 이름 명령)은 claude-home에 있던 내용 그대로일 때만 지웁니다. 고쳤거나 이름만 같은 내 파일은 남기고 "확인 필요"로 알려 줍니다. 그 밖의 파일은 건드리지 않습니다.
 - `CLAUDE_CONFIG_DIR`, `CODEX_HOME` 환경 변수를 쓰고 있으면 그 폴더에 넣습니다.
-- claude-home이나 claude-home으로 만든 프로젝트에서는 같은 공통 규칙이 두 번(사용자 설정 + 저장소) 읽힙니다. 내용이 같아서 문제는 없습니다.
+- claude-home이나 claude-home으로 만든 프로젝트에서는 같은 공통 규칙(약 17KB)이 두 번(사용자 설정 + 저장소) 읽혀 그만큼 컨텍스트를 더 씁니다. 내용이 같아 서로 부딪히지는 않습니다. claude-home으로 만든 프로젝트에서만 일한다면 `--user`는 하지 않아도 됩니다(스킬도 프로젝트에 들어 있음).
 - 번역 규칙은 `.md`, `.ipynb` 파일을 다룰 때만 읽히고, 저장소에 `TRANSLATION.md`가 있으면 그쪽이 우선합니다.
 
 ## 4. 설정 확인

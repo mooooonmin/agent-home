@@ -128,12 +128,29 @@ class RepoChecksTest(unittest.TestCase):
             repo.write("AGENTS.md", "# 안내\n")
             repo.write("CLAUDE.md", "# 다른 지시\n")
             repo.write("ok/AGENTS.md", "# 안내\n")
-            repo.write("ok/CLAUDE.md", "@AGENTS.md\n")
+            repo.write("ok/CLAUDE.md", "@./AGENTS.md \n")
             repo.write("solo/CLAUDE.md", "# AGENTS.md 없음\n")
             files = ["AGENTS.md", "CLAUDE.md", "ok/AGENTS.md", "ok/CLAUDE.md", "solo/CLAUDE.md"]
             errors = repo_checks.check_claude_imports_agents(repo.root, files)
             self.assertEqual(len(errors), 1)
             self.assertTrue(errors[0].startswith("CLAUDE.md:"))
+
+    def test_위쪽_CLAUDE_md에_가려진_하위_AGENTS_md를_찾는다(self):
+        with TempRepo() as repo:
+            repo.write("AGENTS.md", "# 안내\n")
+            repo.write("CLAUDE.md", "@AGENTS.md\n")
+            repo.write("pkg/AGENTS.md", "# 하위 안내\n")
+            repo.write("other/AGENTS.md", "# CLAUDE.md 없는 저장소 일부\n")
+            files = ["AGENTS.md", "CLAUDE.md", "pkg/AGENTS.md", "other/AGENTS.md"]
+            errors = repo_checks.check_claude_imports_agents(repo.root, files)
+            self.assertEqual(len(errors), 2)
+            self.assertTrue(all("위쪽 폴더의 CLAUDE.md" in e for e in errors))
+
+    def test_CLAUDE_md가_없으면_AGENTS_md만으로_통과한다(self):
+        with TempRepo() as repo:
+            repo.write("AGENTS.md", "# 안내\n")
+            repo.write("pkg/AGENTS.md", "# 하위 안내\n")
+            self.assertEqual(repo_checks.check_claude_imports_agents(repo.root, ["AGENTS.md", "pkg/AGENTS.md"]), [])
 
     def test_스킬_원본과_사본이_다르면_알린다(self):
         with TempRepo() as repo:
