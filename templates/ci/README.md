@@ -4,7 +4,7 @@
 
 | 파일 | 용도 | 넣는 곳 |
 |---|---|---|
-| `repo_checks.py` | 생성물 커밋, 버전 고정, `latest` 태그, 충돌 표시, 셸 문법, 문서 링크, 공백 오류, 에이전트 지시 파일(`AGENTS.md` 크기, `CLAUDE.md`의 `@AGENTS.md`, 스킬 원본과 사본 일치)을 한 번에 검사 | `scripts/` |
+| `repo_checks.py` | 생성물 커밋, 버전 고정, `latest` 태그, 충돌 표시, 셸 문법, 문서 링크, 공백 오류, 에이전트 지시 파일(`AGENTS.md` 크기, `CLAUDE.md`의 `@AGENTS.md`, 스킬 원본과 사본 일치), 훅 스크립트 존재, `.gitattributes`·`.gitignore`의 중괄호 패턴을 한 번에 검사 | `scripts/` |
 | `check_doc_links.py` | 문서 내부 링크·이미지·제목 앵커 검사 (`repo_checks.py`가 불러 씀) | `scripts/` |
 | `test_checks.py` | 위 두 검사 도구의 테스트 | `scripts/` |
 | `agent_hooks.py` | Claude Code·Codex 공통 훅: 기본 브랜치 직접 커밋·푸시 차단, 끝내기 전 저장소 검사 ([훅](../../docs/setup.md#훅)) | `scripts/` |
