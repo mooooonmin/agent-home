@@ -184,6 +184,14 @@ class RepoChecksTest(unittest.TestCase):
             repo.write(".claude/settings.json", '{"permissions": {"allow": ["Bash(python tools/gen.py:*)"]}}')
             self.assertEqual(repo_checks.check_hook_scripts(repo.root, [".claude/settings.json"]), [])
 
+    def test_git_패턴_파일의_중괄호_패턴을_찾는다(self):
+        with TempRepo() as repo:
+            repo.write(".gitattributes", "# *.{a,b} 주석은 괜찮음\n* text=auto eol=lf\n*.{bat,ps1} text eol=crlf\n*.png binary\n")
+            repo.write("sub/.gitignore", "*.{log,tmp}\nbuild/\n")
+            errors = repo_checks.check_git_brace_patterns(repo.root, [".gitattributes", "sub/.gitignore"])
+            self.assertEqual(len(errors), 2)
+            self.assertTrue(errors[0].startswith(".gitattributes:3:"))
+
     def test_깨끗한_저장소는_통과한다(self):
         with TempRepo() as repo:
             repo.write("README.md", "# 프로젝트\n\n[문서](docs/guide.md)\n")

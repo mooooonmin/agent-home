@@ -11,6 +11,7 @@
 - 로컬 변경의 공백 오류: `git diff HEAD --check` (CI의 깨끗한 checkout에서는 할 일이 없음)
 - 에이전트 지시 파일: AGENTS.md가 Codex 기본 읽기 한도(32KiB)를 넘는지, 같은 폴더의 CLAUDE.md가
   `@AGENTS.md`로 가져오는지, `.agents/skills/`(원본)와 `.claude/skills/`(사본)가 같은지
+- git 패턴 파일: `.gitattributes`·`.gitignore`의 중괄호 패턴(`*.{a,b}`). git은 중괄호를 펼치지 않아 아무 파일에도 맞지 않음
 - 에이전트 훅 설정: `.claude/settings.json`, `.codex/hooks.json`이 가리키는 Python 스크립트가 있는지
   (없으면 python이 종료 코드 2로 끝나 두 도구 모두 훅이 "막음"으로 처리함)
 
@@ -44,6 +45,8 @@ CONFLICT = re.compile(r"^(<{7}|>{7}) ")
 CODEX_DOC_MAX_BYTES = 32 * 1024
 SKILL_SOURCE_DIR = ".agents/skills/"
 SKILL_MIRROR_DIR = ".claude/skills/"
+GIT_PATTERN_FILES = frozenset({".gitattributes", ".gitignore"})
+BRACE_PATTERN = re.compile(r"\{[^{}]*,[^{}]*\}")
 HOOK_CONFIG_FILES = (".claude/settings.json", ".codex/hooks.json")
 HOOK_SCRIPT = re.compile(r"[\w.-]+(?:/[\w.-]+)*\.py\b")
 # Claude Code가 AGENTS.md를 가져오는 줄로 인정하는 형태
@@ -227,6 +230,18 @@ def check_skill_mirror(root: Path, files: list[str]) -> list[str]:
     return errors
 
 
+def check_git_brace_patterns(root: Path, files: list[str]) -> list[str]:
+    errors = []
+    for rel in files:
+        if Path(rel).name not in GIT_PATTERN_FILES:
+            continue
+        for no, line in enumerate(read_lines(root / rel), 1):
+            pattern = line.split()[0] if line.split() else ""
+            if not pattern.startswith("#") and BRACE_PATTERN.search(pattern):
+                errors.append(f"{rel}:{no}: git은 중괄호 패턴을 지원하지 않아 아무 파일에도 맞지 않습니다 (확장자마다 한 줄씩): {pattern}")
+    return errors
+
+
 def hook_command_strings(node, inside_hooks: bool = False):
     """설정 JSON에서 `hooks` 아래에 있는 문자열(명령과 인자)만 꺼냅니다."""
     if isinstance(node, dict):
@@ -274,6 +289,7 @@ def run_all(root: Path, excludes: list[str], docs_excludes: list[str] | None = N
         *check_claude_imports_agents(root, files),
         *check_skill_mirror(root, files),
         *check_hook_scripts(root, files),
+        *check_git_brace_patterns(root, files),
     ]
 
 
