@@ -11,6 +11,8 @@
 - 로컬 변경의 공백 오류: `git diff HEAD --check` (CI의 깨끗한 checkout에서는 할 일이 없음)
 - 에이전트 지시 파일: AGENTS.md가 Codex 기본 읽기 한도(32KiB)를 넘는지, 같은 폴더의 CLAUDE.md가
   `@AGENTS.md`로 가져오는지, `.agents/skills/`(원본)와 `.claude/skills/`(사본)가 같은지
+- 에이전트 훅 설정: `.claude/settings.json`, `.codex/hooks.json`이 가리키는 Python 스크립트가 있는지
+  (없으면 python이 종료 코드 2로 끝나 두 도구 모두 훅이 "막음"으로 처리함)
 
 표준 라이브러리만 씁니다. 이 파일과 check_doc_links.py를 같은 폴더(보통 scripts/)에 둡니다.
 
@@ -41,6 +43,8 @@ CONFLICT = re.compile(r"^(<{7}|>{7}) ")
 CODEX_DOC_MAX_BYTES = 32 * 1024
 SKILL_SOURCE_DIR = ".agents/skills/"
 SKILL_MIRROR_DIR = ".claude/skills/"
+HOOK_CONFIG_FILES = (".claude/settings.json", ".codex/hooks.json")
+HOOK_SCRIPT = re.compile(r"(?:\$\{CLAUDE_PROJECT_DIR\}/)?([\w./-]+\.py)\b")
 # Claude Code가 AGENTS.md를 가져오는 줄로 인정하는 형태
 CLAUDE_IMPORT_LINES = ("@AGENTS.md", "@./AGENTS.md")
 TEXT_SUFFIXES = {
@@ -222,6 +226,20 @@ def check_skill_mirror(root: Path, files: list[str]) -> list[str]:
     return errors
 
 
+def check_hook_scripts(root: Path, files: list[str]) -> list[str]:
+    errors = []
+    for rel in HOOK_CONFIG_FILES:
+        if rel not in files:
+            continue
+        for script in sorted({m.group(1) for line in read_lines(root / rel) for m in HOOK_SCRIPT.finditer(line)}):
+            if not (root / script).is_file():
+                errors.append(
+                    f"{rel}: 훅 스크립트 {script}가 없습니다. 이대로면 셸 명령이 모두 막힙니다 "
+                    f"(claude-home의 sync_rules.py로 넣거나 훅 설정을 지움)"
+                )
+    return errors
+
+
 def run_all(root: Path, excludes: list[str], docs_excludes: list[str] | None = None) -> list[str]:
     files = [f for f in list_files(root) if not excluded(f, excludes)]
     docs_excludes = excludes + (docs_excludes or [])
@@ -236,6 +254,7 @@ def run_all(root: Path, excludes: list[str], docs_excludes: list[str] | None = N
         *check_agents_md_size(root, files),
         *check_claude_imports_agents(root, files),
         *check_skill_mirror(root, files),
+        *check_hook_scripts(root, files),
     ]
 
 

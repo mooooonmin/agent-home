@@ -15,8 +15,9 @@ claude-home/
 ├─ CLAUDE.md                     # @AGENTS.md (Claude Code가 AGENTS.md를 읽게 함)
 ├─ .agents/skills/               # 스킬 원본: new-project, research, update-docs, translate-chapter, review-translation (Codex)
 ├─ .github/                      # 이 저장소 CI, PR 템플릿(새 프로젝트에도 복사)
+├─ .codex/hooks.json             # 훅 (Codex). 두 도구 모두 templates/ci/agent_hooks.py를 부름
 ├─ .claude/
-│  ├─ settings.json              # 권한 (비밀값 파일 읽기 금지)
+│  ├─ settings.json              # 권한 (비밀값 파일 읽기 금지)과 훅 (Claude Code)
 │  ├─ skills/                    # .agents/skills와 같은 사본 (Claude Code)
 │  └─ rules/                     # 해당 파일을 다룰 때 읽히는 규칙 (Claude Code는 자동, Codex는 AGENTS.md의 표를 보고 읽음)
 │     ├─ translation.md          # 번역 (.md, .ipynb)
@@ -28,7 +29,8 @@ claude-home/
 │  ├─ CLAUDE.project.md          # 각 프로젝트의 CLAUDE.md (@AGENTS.md)
 │  ├─ lint/                      # 언어별 린트·포맷·계층 검사 설정, .editorconfig, .gitattributes, .gitignore
 │  ├─ docs/                      # README, 폴더 README, CHANGELOG, ADR, 실행 계획·개선 목록 템플릿
-│  ├─ ci/                        # 저장소 검사 스크립트와 테스트, GitHub Actions (공통 + lang/ 언어별 빌드·테스트)
+│  ├─ ci/                        # 저장소 검사·훅 스크립트와 테스트, GitHub Actions (공통 + lang/ 언어별 빌드·테스트)
+│  ├─ agent-settings/            # 각 프로젝트의 .claude/settings.json, .codex/hooks.json (훅 포함)
 │  └─ translation-repo/          # 새 번역 저장소용 README·NOTICE·TRANSLATION.md
 ├─ scripts/
 │  ├─ README.md                  # 스크립트별 용도와 확인 명령
@@ -93,6 +95,7 @@ pwsh -File scripts/new-project.ps1 -Name my-app -Language python -Description "�
 3. 도구가 "확인 필요"로 알려 준 것을 처리합니다. 원래 있던 `CLAUDE.md`에는 맨 위에 `@AGENTS.md` 줄을 넣습니다. 고친 흔적이 있는 예전 규칙 사본(`.claude/rules/basics.md` 등)은 지우지 않고 남겨 두므로, 프로젝트만의 내용을 `AGENTS.md` 위쪽으로 옮긴 뒤 직접 지웁니다.
 4. `AGENTS.md` 위쪽(표시 밖)에 저장소 안내를 채웁니다. 형식은 `templates/AGENTS.project.md`를 봅니다.
 5. 언어에 맞는 `templates/lint/` 설정과 `templates/ci/`의 GitHub Actions를 넣습니다.
+6. Codex를 쓴다면 그 프로젝트에서 훅을 한 번 승인합니다([훅](docs/setup.md#훅)).
 
 이 저장소가 규칙의 **원본**입니다. 규칙을 고칠 땐 여기서 고친 뒤 같은 명령으로 프로젝트에 다시 반영합니다.
 

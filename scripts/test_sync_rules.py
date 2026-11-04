@@ -45,6 +45,8 @@ class Workspace:
             write(self.source / f".agents/skills/{name}/SKILL.md", f"---\nname: {name}\ndescription: 설명\n---\n")
         for script in sync_rules.CHECK_SCRIPTS:
             write(self.source / "templates/ci" / script, f"# {script}\n")
+        for _, template in sync_rules.AGENT_SETTINGS:
+            write(self.source / template, '{"hooks": "python -I scripts/agent_hooks.py"}\n')
         known = frozenset({hashlib.sha256(LEGACY_TEXT.encode("utf-8")).hexdigest()})
         self._patches = [
             mock.patch.dict(os.environ, {"CLAUDE_CONFIG_DIR": "", "CODEX_HOME": ""}),
@@ -100,7 +102,7 @@ class ProjectTest(unittest.TestCase):
             for expected in (
                 "AGENTS.md", "CLAUDE.md", ".claude/rules/lang/python.md",
                 ".agents/skills/update-docs/SKILL.md", ".claude/skills/update-docs/SKILL.md",
-                "scripts/repo_checks.py",
+                "scripts/repo_checks.py", "scripts/agent_hooks.py", ".claude/settings.json", ".codex/hooks.json",
             ):
                 self.assertIn(expected, paths)
             self.assertNotIn(".claude/rules/lang/go.md", paths)
@@ -161,6 +163,16 @@ class ProjectTest(unittest.TestCase):
             self.assertNotIn("CLAUDE.md", changed(plan, ws.target))
             self.assertEqual(len(plan.warnings), 1)
             self.assertIn("@AGENTS.md", plan.warnings[0])
+
+    def test_이미_있는_설정은_덮어쓰지_않고_훅이_없으면_알린다(self):
+        with Workspace() as ws:
+            write(ws.target / ".claude/settings.json", '{"permissions": {}}\n')
+            plan = sync_rules.plan_project(ws.source, ws.target, set())
+            paths = changed(plan, ws.target)
+            self.assertNotIn(".claude/settings.json", paths)
+            self.assertIn(".codex/hooks.json", paths)
+            self.assertEqual(len(plan.warnings), 1)
+            self.assertIn("settings.json", plan.warnings[0])
 
     def test_상대_경로로_가져오는_CLAUDE_md도_인정한다(self):
         with Workspace() as ws:

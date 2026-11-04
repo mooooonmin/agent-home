@@ -9,6 +9,8 @@
 
 - 공통 규칙은 claude-home `AGENTS.md`의 common-rules 표시 사이 부분입니다. 대상 `AGENTS.md`에서는
   같은 표시 사이만 바꾸고, 표시가 둘 다 없으면 맨 아래에 붙입니다. 표시가 한쪽만 있으면 멈춥니다.
+- 훅 설정(`.claude/settings.json`, `.codex/hooks.json`)은 없을 때만 템플릿으로 만듭니다. 이미 있으면 덮어쓰지 않고,
+  훅(agent_hooks.py)이 빠져 있으면 알립니다.
 - 스킬 원본은 `.agents/skills/`(Codex)이고, 같은 내용을 `.claude/skills/`(Claude Code)에도 둡니다.
   원본에서 없어진 스킬 파일은 사본에서도 지웁니다.
 - 공통 규칙이 AGENTS.md로 옮겨지기 전의 사본(`.claude/rules/basics.md` 등, `.claude/commands/`)은
@@ -32,7 +34,13 @@ LANGUAGES = ("java", "python", "typescript", "dart", "go")
 TRANSLATION = "translation"
 PROJECT_SKILLS = ("update-docs",)
 TRANSLATION_SKILLS = ("translate-chapter", "review-translation")
-CHECK_SCRIPTS = ("repo_checks.py", "check_doc_links.py", "test_checks.py")
+CHECK_SCRIPTS = ("repo_checks.py", "check_doc_links.py", "test_checks.py", "agent_hooks.py", "test_agent_hooks.py")
+# 프로젝트 안의 경로 → claude-home의 템플릿. 프로젝트마다 손볼 수 있는 설정이라 없을 때만 만듭니다.
+AGENT_SETTINGS = (
+    (".claude/settings.json", "templates/agent-settings/claude-settings.json"),
+    (".codex/hooks.json", "templates/agent-settings/codex-hooks.json"),
+)
+HOOK_SCRIPT_NAME = "agent_hooks.py"
 USER_RULES_FILE = "claude-home.md"
 CLAUDE_IMPORT_LINES = ("@AGENTS.md", "@./AGENTS.md")
 # 공통 규칙이 AGENTS.md 하나로 합쳐지기 전에 따로 복사하던 파일
@@ -209,6 +217,12 @@ def plan_project(source: Path, target: Path, rule_sets: set[str]) -> Plan:
 
     for script in CHECK_SCRIPTS:
         planner.write(target / "scripts" / script, (source / "templates/ci" / script).read_bytes())
+    for rel, template in AGENT_SETTINGS:
+        settings = target / rel
+        if not settings.is_file():
+            planner.write(settings, (source / template).read_bytes())
+        elif HOOK_SCRIPT_NAME not in read_text(settings):
+            planner.warn(f"{settings}: 훅이 없습니다. claude-home의 {template}에서 hooks 부분을 합치세요")
 
     for name in LEGACY_RULE_FILES:
         planner.delete_legacy(rules / name, "AGENTS.md 위쪽 저장소 안내")

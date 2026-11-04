@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -I templates/ci/agent_hooks.py pre-bash",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -I templates/ci/agent_hooks.py stop templates/ci/repo_checks.py --docs-exclude templates",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}

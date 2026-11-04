@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -I scripts/agent_hooks.py pre-bash",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -I scripts/agent_hooks.py stop scripts/repo_checks.py",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}
