@@ -41,6 +41,8 @@ CONFLICT = re.compile(r"^(<{7}|>{7}) ")
 CODEX_DOC_MAX_BYTES = 32 * 1024
 SKILL_SOURCE_DIR = ".agents/skills/"
 SKILL_MIRROR_DIR = ".claude/skills/"
+# Claude Code가 AGENTS.md를 가져오는 줄로 인정하는 형태
+CLAUDE_IMPORT_LINES = ("@AGENTS.md", "@./AGENTS.md")
 TEXT_SUFFIXES = {
     ".md", ".py", ".js", ".ts", ".tsx", ".jsx", ".java", ".kt", ".go", ".dart", ".rs", ".sh",
     ".yml", ".yaml", ".json", ".toml", ".gradle", ".txt", ".html", ".css", ".xml", ".ps1",
@@ -179,14 +181,27 @@ def check_agents_md_size(root: Path, files: list[str]) -> list[str]:
 
 
 def check_claude_imports_agents(root: Path, files: list[str]) -> list[str]:
+    """Claude Code는 작업 폴더나 그 위에 CLAUDE.md가 하나라도 있으면 AGENTS.md를 읽지 않습니다.
+
+    그래서 그런 AGENTS.md마다 같은 폴더의 CLAUDE.md가 `@AGENTS.md`로 가져와야 합니다.
+    """
+    claude_dirs = {Path(rel).parent for rel in files if Path(rel).name == "CLAUDE.md"}
     errors = []
     for rel in files:
-        if Path(rel).name != "CLAUDE.md":
+        if Path(rel).name != "AGENTS.md":
             continue
-        agents = Path(rel).with_name("AGENTS.md").as_posix()
-        if agents in files and "@AGENTS.md" not in read_lines(root / rel):
+        folder = Path(rel).parent
+        if not claude_dirs & {folder, *folder.parents}:
+            continue  # CLAUDE.md가 없으면 Claude Code가 AGENTS.md를 직접 읽음
+        claude = (folder / "CLAUDE.md").as_posix()
+        if folder not in claude_dirs:
             errors.append(
-                f"{rel}: CLAUDE.md가 있으면 Claude Code는 AGENTS.md를 읽지 않습니다 (맨 위에 `@AGENTS.md` 줄 추가)"
+                f"{rel}: 위쪽 폴더의 CLAUDE.md 때문에 Claude Code가 이 파일을 읽지 않습니다 "
+                f"(같은 폴더에 `@AGENTS.md` 한 줄짜리 {claude} 추가)"
+            )
+        elif not any(line.strip() in CLAUDE_IMPORT_LINES for line in read_lines(root / claude)):
+            errors.append(
+                f"{claude}: CLAUDE.md가 있으면 Claude Code는 AGENTS.md를 읽지 않습니다 (맨 위에 `@AGENTS.md` 줄 추가)"
             )
     return errors
 
