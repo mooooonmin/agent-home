@@ -7,6 +7,7 @@ import hashlib
 import importlib.util
 import io
 import os
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -158,6 +159,42 @@ class ProjectTest(unittest.TestCase):
             self.assertEqual(deleted(plan, ws.target), [".claude/commands/update-docs.md", ".claude/rules/basics.md"])
             self.assertEqual(len(plan.warnings), 1)
             self.assertIn("git.md", plan.warnings[0])
+
+    def test_반영한_claude_home_커밋을_적는다(self):
+        with Workspace() as ws:
+            git = ["git", "-c", "user.name=t", "-c", "user.email=t@example.com"]
+            subprocess.run([*git, "init", "-q"], cwd=ws.source, check=True)
+            subprocess.run([*git, "add", "-A"], cwd=ws.source, check=True)
+            subprocess.run([*git, "commit", "-q", "-m", "init"], cwd=ws.source, check=True)
+            commit = subprocess.run(["git", "log", "-1", "--format=%h"], cwd=ws.source,
+                                    capture_output=True, text=True, check=True).stdout.strip()
+            sync_rules.apply(sync_rules.plan_project(ws.source, ws.target, set()))
+            text = (ws.target / sync_rules.VERSION_FILE).read_text(encoding="utf-8")
+            self.assertIn(f"commit: {commit} ", text)
+            self.assertNotIn("커밋하지 않은 변경", text)
+
+    def test_추적하지_않는_파일은_변경으로_세지_않는다(self):
+        with Workspace() as ws:
+            git = ["git", "-c", "user.name=t", "-c", "user.email=t@example.com"]
+            subprocess.run([*git, "init", "-q"], cwd=ws.source, check=True)
+            subprocess.run([*git, "add", "-A"], cwd=ws.source, check=True)
+            subprocess.run([*git, "commit", "-q", "-m", "init"], cwd=ws.source, check=True)
+            write(ws.source / "notes/초안.md", "추적하지 않는 노트\n")
+            self.assertNotIn("커밋하지 않은 변경", sync_rules.source_version(ws.source))
+            write(ws.source / "AGENTS.md", f"# 고침\n\n{BLOCK}\n")
+            self.assertIn("커밋하지 않은 변경", sync_rules.source_version(ws.source))
+
+    def test_바뀌는_파일이_없으면_버전_파일도_그대로_둔다(self):
+        with Workspace() as ws:
+            sync_rules.apply(sync_rules.plan_project(ws.source, ws.target, set()))
+            write(ws.target / sync_rules.VERSION_FILE, "commit: 예전 시점\n")
+            plan = sync_rules.plan_project(ws.source, ws.target, set())
+            self.assertEqual(plan.changes, [])
+
+    def test_원본이_git_저장소가_아니면_알_수_없음으로_적는다(self):
+        with Workspace() as ws:
+            sync_rules.apply(sync_rules.plan_project(ws.source, ws.target, set()))
+            self.assertIn("commit: 알 수 없음", (ws.target / sync_rules.VERSION_FILE).read_text(encoding="utf-8"))
 
     def test_가져오기_줄이_없는_CLAUDE_md는_고치지_않고_알린다(self):
         with Workspace() as ws:

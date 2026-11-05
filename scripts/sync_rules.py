@@ -12,6 +12,7 @@
 - 코드·문서 작성 규칙(`.claude/rules/code.md`, `writing-docs.md`)은 모든 프로젝트에, 언어·번역 규칙은 고른 것만 넣습니다.
 - 훅 설정(`.claude/settings.json`, `.codex/hooks.json`)은 없을 때만 템플릿으로 만듭니다. 이미 있으면 덮어쓰지 않고,
   훅(agent_hooks.py)이 빠져 있으면 알립니다.
+- 프로젝트에는 반영한 claude-home 커밋을 `.claude-home-version`에 적어, 나중에 그 사이 바뀐 내용을 찾을 수 있게 합니다.
 - 스킬 원본은 `.agents/skills/`(Codex)이고, 같은 내용을 `.claude/skills/`(Claude Code)에도 둡니다.
   원본에서 없어진 스킬 파일은 사본에서도 지웁니다.
 - 공통 규칙이 AGENTS.md로 옮겨지기 전의 사본(`.claude/rules/basics.md` 등, `.claude/commands/`)은
@@ -24,6 +25,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import os
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -45,6 +47,7 @@ AGENT_SETTINGS = (
 )
 HOOK_SCRIPT_NAME = "agent_hooks.py"
 USER_RULES_FILE = "claude-home.md"
+VERSION_FILE = ".claude-home-version"
 CLAUDE_IMPORT_LINES = ("@AGENTS.md", "@./AGENTS.md")
 # 공통 규칙이 AGENTS.md 하나로 합쳐지기 전에 따로 복사하던 파일
 LEGACY_RULE_FILES = ("basics.md", "coding.md", "docs.md", "git.md")
@@ -123,6 +126,33 @@ def imports_agents(claude_md: str) -> bool:
 
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8").replace("\r\n", "\n") if path.is_file() else ""
+
+
+def source_version(source: Path) -> str:
+    """원본 claude-home의 마지막 커밋(짧은 해시와 날짜). git 저장소가 아니면 '알 수 없음'."""
+    def git(*args: str) -> str | None:
+        try:
+            result = subprocess.run(["git", *args], cwd=source, capture_output=True, text=True, encoding="utf-8")
+        except OSError:
+            return None
+        return result.stdout.strip() if result.returncode == 0 else None
+
+    # %cs(짧은 날짜)는 Git 2.21 이상이라, 오래전부터 있는 %ci에서 날짜만 씁니다.
+    commit = git("log", "-1", "--format=%h %ci")
+    if not commit:
+        return "알 수 없음"
+    short_hash, date = commit.split()[:2]
+    # 추적하는 파일의 변경만 셉니다. 추적하지 않는 노트 초안 등은 복사되는 규칙과 상관없습니다.
+    dirty = git("status", "--porcelain", "--untracked-files=no")
+    return f"{short_hash} {date}" + (" (커밋하지 않은 변경 포함)" if dirty else "")
+
+
+def version_text(source: Path) -> str:
+    return (
+        "# 이 프로젝트의 공통 규칙·스킬·검사·훅을 반영한 claude-home 시점입니다. claude-home의 scripts/sync_rules.py가 씁니다.\n"
+        "# 그 뒤 바뀐 내용은 claude-home의 CHANGELOG.md나 `git -C <claude-home> log --oneline <커밋>..main`으로 봅니다.\n"
+        f"commit: {source_version(source)}\n"
+    )
 
 
 def is_known_legacy(path: Path) -> bool:
@@ -231,6 +261,10 @@ def plan_project(source: Path, target: Path, rule_sets: set[str]) -> Plan:
 
     for name in LEGACY_RULE_FILES:
         planner.delete_legacy(rules / name, "AGENTS.md 위쪽 저장소 안내")
+    # 실제로 바뀌는 파일이 있을 때만 시점을 새로 적습니다. 상관없는 claude-home 커밋 때문에 매번 바뀌지 않게 합니다.
+    version_file = target / VERSION_FILE
+    if planner.plan.changes or not version_file.is_file():
+        planner.write_text(version_file, version_text(source))
     return planner.plan
 
 
