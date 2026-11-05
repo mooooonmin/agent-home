@@ -12,7 +12,7 @@
 | `checks.yml` | 저장소 검사 GitHub Actions | `.github/workflows/` |
 | `lang/<언어>.yml` | 언어별 빌드·포맷·린트·테스트 GitHub Actions (java, python, typescript, dart, go) | `.github/workflows/` |
 
-새 프로젝트는 `scripts/new-project.ps1`이 이 파일들을 알맞은 위치에 넣어 줍니다. 검사·훅 스크립트와 테스트는 `scripts/sync_rules.py`가 넣고, 원본이 바뀌면 같은 명령으로 다시 반영합니다.
+새 프로젝트는 `scripts/new_project.py`가 이 파일들을 알맞은 위치에 넣어 줍니다. 검사·훅 스크립트와 테스트는 `scripts/sync_rules.py`가 넣고, 원본이 바뀌면 같은 명령으로 다시 반영합니다.
 
 로컬에서 확인:
 

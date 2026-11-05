@@ -8,17 +8,17 @@ argument-hint: <이름> <java|python|typescript|dart|go> [한 줄 설명]
 
 `$ARGUMENTS`가 비어 있거나 그대로 보이면(Codex 등) 사용자 메시지에서 찾고, 없으면 묻습니다.
 
-claude-home 기준으로 새 프로젝트를 만들고 체계적으로 시작합니다. **로컬 PC에서만** 씁니다. 클라우드 세션에는 `pwsh`가 없고, 세션에 넣은 저장소 밖에 새 저장소를 만들지 않으므로 클라우드에서 실행했다면 멈추고 그렇게 안내합니다. 단계마다 무엇을 했는지 짧게 알리고, 사용자 확인이 필요한 곳에서는 멈춰서 묻습니다.
+claude-home 기준으로 새 프로젝트를 만들고 체계적으로 시작합니다. **로컬 PC에서만** 씁니다. 클라우드 세션은 세션에 넣은 저장소 밖에 새 저장소를 만들지 않으므로, 클라우드에서 실행했다면 멈추고 그렇게 안내합니다. 단계마다 무엇을 했는지 짧게 알리고, 사용자 확인이 필요한 곳에서는 멈춰서 묻습니다.
 
 ## 1. 정하기
 
 - 이름, 언어, 한 줄 설명 중 빠진 것이 있으면 먼저 묻습니다.
 - 목표가 모호하면 두세 가지만 묻습니다: 누가 쓰는지, 첫 버전에서 꼭 되어야 하는 것 하나, 하지 않을 것.
-- 번역 저장소라면 `-Translation`을 붙입니다.
+- 번역 저장소라면 `--translation`을 붙입니다.
 
 ## 2. 틀 깔기
 
-스크립트는 claude-home 저장소 안에 있습니다. 현재 폴더에 `scripts/new-project.ps1`이 없으면 claude-home 위치를 묻고 그 경로의 스크립트를 씁니다(로컬 PC 기준 보통 `C:\00.PROJECT\claude-home`).
+스크립트(`scripts/new_project.py`, Python 3.11 이상)는 claude-home 저장소 안에 있습니다. 현재 폴더에 없으면 claude-home 위치를 묻고 그 경로의 스크립트를 씁니다(로컬 PC 기준 보통 `C:\00.PROJECT\claude-home`).
 
 1. claude-home을 최신으로 받습니다. 스크립트는 GitHub이 아니라 이 PC의 claude-home 폴더에서 파일을 복사하기 때문입니다.
    ```bash
@@ -28,11 +28,11 @@ claude-home 기준으로 새 프로젝트를 만들고 체계적으로 시작합
    ```bash
    git -C <claude-home 경로> pull
    ```
-2. 미리보기로 만들 파일을 확인합니다.
+2. 미리보기로 만들 파일을 확인합니다. 아무것도 만들지 않습니다.
    ```bash
-   pwsh -File scripts/new-project.ps1 -Name <이름> -Language <언어> -Description "<설명>" -WhatIf
+   python -I scripts/new_project.py --name <이름> --language <언어> --description "<설명>"
    ```
-3. 사용자에게 위치(기본: claude-home 옆 폴더)와 파일 목록을 알리고, 그대로 `-WhatIf` 없이 실행합니다.
+3. 사용자에게 위치(기본: claude-home 옆 폴더, 바꾸려면 `--path`)와 파일 목록을 알리고, 같은 명령에 `--apply`를 붙여 만듭니다. 규칙·스킬·검사·훅 스크립트와 훅 설정도 이때 함께 들어가고 `git init -b main`까지 합니다.
 4. 이후 작업은 새 폴더의 절대 경로에서 합니다.
 
 ## 3. 뼈대 만들기

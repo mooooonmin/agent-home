@@ -20,7 +20,7 @@ claude-home 공통 규칙의 일부로, 문서를 쓰거나 고칠 때 읽습니
 
 ## 문서 구성
 
-새 프로젝트는 다음 구성으로 시작합니다. claude-home의 `new-project` 스킬(`scripts/new-project.ps1`)이 이 구성을 만들어 줍니다. 템플릿은 claude-home의 `templates/docs/`에 있습니다.
+새 프로젝트는 다음 구성으로 시작합니다. claude-home의 `new-project` 스킬(`scripts/new_project.py`)이 이 구성을 만들어 줍니다. 템플릿은 claude-home의 `templates/docs/`에 있습니다.
 
 - `README.md`: 무엇인지, 시작하기(설치·실행·테스트 명령), 구조, 문서 링크
 - `AGENTS.md`: 저장소 안내(작업별로 먼저 읽을 문서, 빌드·테스트 명령, 이 저장소만의 규칙)와 그 아래 공통 규칙. Codex가 직접 읽습니다. 템플릿: claude-home의 `templates/AGENTS.project.md`
