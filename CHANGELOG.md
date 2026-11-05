@@ -6,6 +6,7 @@ claude-home의 주요 변경 사항을 기록합니다. 형식은 [Keep a Change
 
 ### 추가
 
+- 프로젝트 `AGENTS.md` 템플릿의 "이 저장소 규칙"에 확인된 사실 자리 추가, `writing-docs.md`에 찾는 방법 대신 확인한 사실을 근거와 함께 적는 기준 추가
 - 설계 결정 기록(`docs/adr/` 0001~0005)과 이 변경 이력
 - `sync_rules.py --target`이 반영한 claude-home 커밋을 프로젝트의 `.claude-home-version`에 기록
 - `templates/README.md`: 템플릿 폴더별 용도와 복사되는 위치
