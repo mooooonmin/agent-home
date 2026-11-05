@@ -14,6 +14,7 @@ Codex는 이 파일을 직접 읽고, Claude Code는 `CLAUDE.md`의 `@AGENTS.md`
 | `.claude/rules/translation.md` | 번역 원칙 | 위와 같음 (`.md`, `.ipynb`) |
 | `.agents/skills/` | 스킬 원본 (`new-project`, `research`, `update-docs`, `translate-chapter`, `review-translation`) | Codex가 읽음. Claude Code는 같은 사본인 `.claude/skills/`를 읽음 |
 | `.claude/settings.json`, `.codex/hooks.json` | 훅: 기본 브랜치 직접 커밋·푸시 차단, 끝내기 전 저장소 검사 (`templates/ci/agent_hooks.py`) | 셸 명령 전, 응답을 끝내기 전. 자세한 내용은 [초기 설정의 훅](docs/setup.md#훅) |
+| `docs/adr/`, `CHANGELOG.md` | 설계 결정(왜 이 구조인지)과 변경 이력 | 구조를 바꾸거나 프로젝트에 다시 반영할 때 |
 | `glossary/` | 분야별 용어집 | 번역할 때 해당 분야 파일을 먼저 읽음 |
 
 ## 이 저장소에서 작업할 때

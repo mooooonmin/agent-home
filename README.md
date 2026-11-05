@@ -24,7 +24,10 @@ claude-home/
 │     ├─ writing-docs.md         # .md: 폴더 README, 문서 구성, 실행 계획, 문서 쓰는 법
 │     ├─ translation.md          # 번역 (.md, .ipynb)
 │     └─ lang/                   # java, python, typescript, dart, go
-├─ docs/setup.md                 # 초기 설정 안내
+├─ CHANGELOG.md                  # 변경 이력 (프로젝트에 반영할 때 무엇이 바뀌었는지)
+├─ docs/
+│  ├─ setup.md                   # 초기 설정 안내
+│  └─ adr/                       # 설계 결정 기록 (왜 이 구조인지)
 ├─ glossary/                     # *-ko 저장소에서 모은 분야별 용어집
 ├─ templates/
 │  ├─ AGENTS.project.md          # 각 프로젝트의 AGENTS.md 저장소 안내 부분
@@ -103,7 +106,7 @@ python -I scripts/new_project.py --name my-app --language python --description "
 5. 언어에 맞는 `templates/lint/` 설정과 `templates/ci/`의 GitHub Actions를 넣습니다.
 6. Codex를 쓴다면 그 프로젝트에서 훅을 한 번 승인합니다([훅](docs/setup.md#훅)).
 
-이 저장소가 규칙의 **원본**입니다. 규칙을 고칠 땐 여기서 고친 뒤 같은 명령으로 프로젝트에 다시 반영합니다.
+이 저장소가 규칙의 **원본**입니다. 규칙을 고칠 땐 여기서 고친 뒤 같은 명령으로 프로젝트에 다시 반영합니다. 반영할 때마다 프로젝트의 `.claude-home-version`에 claude-home 커밋이 적히므로, 그 뒤 바뀐 내용을 [CHANGELOG](CHANGELOG.md)에서 찾을 수 있습니다.
 
 ### 로컬 PC에서도 같은 규칙 쓰기
 

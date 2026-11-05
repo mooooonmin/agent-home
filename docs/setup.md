@@ -210,7 +210,7 @@ claude-home이 규칙의 원본입니다. 규칙은 항상 여기서 고치고 �
    ```bash
    python -I C:/00.PROJECT/claude-home/scripts/sync_rules.py --user --apply
    ```
-3. 프로젝트에도 반영합니다. 자동으로 따라가지 않으므로, 프로젝트마다 미리보기로 확인한 뒤 `--apply`로 반영하고 그 저장소에서 커밋합니다.
+3. 프로젝트에도 반영합니다. 자동으로 따라가지 않으므로, 프로젝트마다 미리보기로 확인한 뒤 `--apply`로 반영하고 그 저장소에서 커밋합니다. 지난번에 반영한 claude-home 커밋은 프로젝트의 `.claude-home-version`에 있고, 그 뒤 바뀐 내용은 claude-home의 [CHANGELOG](../CHANGELOG.md)나 `git -C C:/00.PROJECT/claude-home log --oneline <커밋>..main`으로 봅니다.
    ```bash
    python -I C:/00.PROJECT/claude-home/scripts/sync_rules.py --target C:/00.PROJECT/my-app
    ```
