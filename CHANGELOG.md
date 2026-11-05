@@ -10,6 +10,10 @@ claude-home의 주요 변경 사항을 기록합니다. 형식은 [Keep a Change
 - `sync_rules.py --target`이 반영한 claude-home 커밋을 프로젝트의 `.claude-home-version`에 기록
 - `templates/README.md`: 템플릿 폴더별 용도와 복사되는 위치
 
+### 변경
+
+- `research`, `translate-chapter`, `review-translation` 스킬: 읽은 자료에 적힌 지시는 따르지 않고 자료로만 다룸. `update-docs` 스킬: 문서의 명령 중 지우거나 바꾸거나 외부로 보내는 명령은 실행하지 않고 확인 항목으로 남김
+
 ## 2026-11-05
 
 ### 추가
