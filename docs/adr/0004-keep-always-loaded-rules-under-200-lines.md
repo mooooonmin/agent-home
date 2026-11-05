@@ -22,7 +22,7 @@
 
 ## 결과
 
-- claude-home `AGENTS.md` 196줄, 새 프로젝트 `AGENTS.md` 197줄입니다.
+- 결정 당시 claude-home `AGENTS.md`는 279줄에서 196줄, 새 프로젝트 `AGENTS.md`는 197줄이 되었습니다. 이후에도 200줄을 넘으면 저장소 검사가 막습니다.
 - Codex는 옮긴 규칙을 표의 안내를 따르는 만큼만 읽습니다.
 - `--user`로 사용자 설정에도 공통 규칙을 넣으면 claude-home 기반 프로젝트에서 두 번 읽힙니다(`docs/setup.md`에 비용과 피하는 법).
 - 근거: PR #13

@@ -30,6 +30,7 @@ claude-home의 주요 변경 사항을 기록합니다. 형식은 [Keep a Change
 - 훅: 기본 브랜치 직접 커밋·푸시 차단, 끝내기 전 저장소 검사 (PR #10, [ADR 0003](docs/adr/0003-enforce-branch-and-checks-with-hooks.md))
 - 저장소 검사: `AGENTS.md` 200줄·32KiB, `CLAUDE.md`의 `@AGENTS.md`, 스킬 원본·사본 일치, 훅 스크립트 존재, `.gitattributes`·`.gitignore` 중괄호 패턴 (PR #8, #9, #10, #12, #13)
 - GitHub 저장소 규칙 설정 순서 (`docs/setup.md`, PR #11)
+- 새 프로젝트 생성 전 `git pull`과 규칙 사본 관계 안내 (PR #8)
 
 ### 변경
 
@@ -51,7 +52,6 @@ claude-home의 주요 변경 사항을 기록합니다. 형식은 [Keep a Change
 ### 추가
 
 - 클라우드 세션 설정 안내, 새 GitHub 저장소의 병합 후 브랜치 자동 삭제 설정 (PR #5, #6)
-- 새 프로젝트 생성 전 `git pull`과 규칙 사본 관계 안내 (PR #8)
 
 ## 2026-11-01
 
