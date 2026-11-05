@@ -29,7 +29,7 @@ claude-home/
 │  ├─ setup.md                   # 초기 설정 안내
 │  └─ adr/                       # 설계 결정 기록 (왜 이 구조인지)
 ├─ glossary/                     # *-ko 저장소에서 모은 분야별 용어집
-├─ templates/
+├─ templates/                    # 프로젝트에 넣는 파일의 원본 (README에 폴더별 용도)
 │  ├─ AGENTS.project.md          # 각 프로젝트의 AGENTS.md 저장소 안내 부분
 │  ├─ CLAUDE.project.md          # 각 프로젝트의 CLAUDE.md (@AGENTS.md)
 │  ├─ lint/                      # 언어별 린트·포맷·계층 검사 설정, .editorconfig, .gitattributes, .gitignore
