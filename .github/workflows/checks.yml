@@ -18,7 +18,7 @@ jobs:
   repository:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0  # PR의 커밋 제목을 기준 브랜치와 비교해 검사하려고 전체 기록을 받음
       - name: 검사 도구 자체 테스트
