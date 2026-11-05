@@ -171,5 +171,46 @@ class RepoHookTest(unittest.TestCase):
             self.assertEqual(run_main(["stop", "missing.py"], {"cwd": str(repo.root)})[0], hooks.EXIT_ALLOW)
 
 
+class CommitTitleHookTest(unittest.TestCase):
+    """같은 폴더의 repo_checks.py로 커밋 제목을 검사합니다."""
+
+    def pre_bash(self, repo, command):
+        payload = {"tool_name": "Bash", "tool_input": {"command": command}, "cwd": str(repo.root)}
+        return run_main(["pre-bash"], payload)
+
+    def test_명령에_적힌_커밋_제목을_읽는다(self):
+        cases = {
+            ("-m", "docs: 안내 추가"): "docs: 안내 추가",
+            ("-am", "fix: x"): "fix: x",
+            ("--message=feat: y",): "feat: y",
+            ("-mchore: z",): "chore: z",
+            ("-m", "$(cat <<'EOF'"): None,
+            ("-F", "msg.txt"): None,
+        }
+        for args, expected in cases.items():
+            with self.subTest(args=args):
+                self.assertEqual(hooks.commit_message(args), expected)
+
+    def test_작업_브랜치에서_형식이_틀린_제목으로_커밋하면_막는다(self):
+        with TempGitRepo() as repo:
+            repo.commit()
+            repo.git("checkout", "-q", "-b", "work")
+            code, message = self.pre_bash(repo, 'git add -A && git commit -m "Update README.md"')
+            self.assertEqual(code, hooks.EXIT_BLOCK)
+            self.assertIn("Update README.md", message)
+            self.assertEqual(self.pre_bash(repo, 'git commit -m "docs: README 추가"')[0], hooks.EXIT_ALLOW)
+
+    def test_푸시_전에_올리지_않은_커밋의_제목을_검사한다(self):
+        with TempGitRepo() as repo:
+            repo.commit()  # 제목 "init"
+            repo.git("update-ref", "refs/remotes/origin/main", "HEAD")  # 이미 올린 커밋
+            repo.git("checkout", "-q", "-b", "work")
+            self.assertEqual(self.pre_bash(repo, "git push -u origin work")[0], hooks.EXIT_ALLOW)
+            repo.git("commit", "-q", "--allow-empty", "-m", "wip")
+            code, message = self.pre_bash(repo, "git push -u origin work")
+            self.assertEqual(code, hooks.EXIT_BLOCK)
+            self.assertIn("wip", message)
+
+
 if __name__ == "__main__":
     unittest.main()

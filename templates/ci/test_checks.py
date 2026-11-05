@@ -228,7 +228,7 @@ class RepoChecksTest(unittest.TestCase):
 
 class CommitTitleTest(unittest.TestCase):
     def test_형식에_맞는_제목과_git의_되돌리기_제목은_통과한다(self):
-        for title in ("docs(ko): 9장 오류 처리 번역", "feat!: 설정 형식 변경", 'Revert "feat: 설정 추가"'):
+        for title in ("docs(ko): 9장 오류 처리 번역", "feat!: 설정 형식 변경", 'Revert "feat: 설정 추가"', 'Reapply "feat: 설정 추가"'):
             with self.subTest(title=title):
                 self.assertIsNone(repo_checks.commit_title_problem(title))
 

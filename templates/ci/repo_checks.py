@@ -16,7 +16,7 @@
   (없으면 python이 종료 코드 2로 끝나 두 도구 모두 훅이 "막음"으로 처리함)
 - 커밋 제목: `type(scope): 설명` 형식(Conventional Commits)인지, 설명이 "수정"처럼 결과를 알 수 없는 말뿐인지.
   기본은 아직 어느 원격에도 올리지 않은 커밋을, `--commits 범위`를 주면 그 범위(예: CI의 `origin/main..HEAD`)를 봅니다.
-  병합 커밋과 git이 만든 되돌리기 커밋(`Revert "..."`)은 건너뜁니다.
+  병합 커밋과 git이 만든 되돌리기 커밋(`Revert "..."`, `Reapply "..."`)은 건너뜁니다.
 
 표준 라이브러리만 씁니다. 이 파일과 check_doc_links.py를 같은 폴더(보통 scripts/)에 둡니다.
 
@@ -59,7 +59,8 @@ CLAUDE_IMPORT_LINES = ("@AGENTS.md", "@./AGENTS.md")
 # 공통 규칙 "커밋과 PR 규칙"의 type 목록과 같게 유지합니다.
 COMMIT_TYPES = ("feat", "fix", "docs", "style", "refactor", "test", "chore", "build", "ci")
 COMMIT_TITLE = re.compile(rf"^(?:{'|'.join(COMMIT_TYPES)})(?:\([^()\s]+\))?!?: (?P<description>\S.*)$")
-GIT_REVERT_TITLE = re.compile(r'^Revert ".*"$')
+# git이 만드는 되돌리기 제목. 되돌리기를 다시 되돌리면 최근 git은 `Reapply "..."`를 씀
+GIT_REVERT_TITLE = re.compile(r'^(?:Revert|Reapply) ".*"$')
 # 공통 규칙이 결과를 알 수 없다고 든 설명
 VAGUE_DESCRIPTIONS = frozenset({"수정", "개선", "작업 완료"})
 UNPUSHED = ("HEAD", "--not", "--remotes")
@@ -309,7 +310,7 @@ def check_commit_titles(root: Path, commit_range: str | None = None) -> list[str
     try:
         result = subprocess.run(
             ["git", "log", "--no-merges", "--format=%h%x00%s", *revisions, "--"],
-            cwd=root, capture_output=True, text=True, encoding="utf-8",
+            cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace",
         )
     except OSError:
         return []

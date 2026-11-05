@@ -6,6 +6,7 @@
 import contextlib
 import importlib.util
 import io
+import re
 import subprocess
 import sys
 import tempfile
@@ -47,7 +48,7 @@ class NewProjectTest(unittest.TestCase):
         created = {c.path for c in new_project.create(SOURCE, request, TODAY).changes}
         self.assertEqual(planned, created)
 
-    def test_모든_언어와_번역_조합에서_만든_프로젝트가_저장소_검사를_통과한다(self):
+    def test_모든_언어와_번역_조합에서_만든_프로젝트가_검사를_통과하고_저장소_안내를_채울_여유가_있다(self):
         for language in sorted(new_project.LANGUAGE_SETUPS):
             for translation in (False, True):
                 with self.subTest(language=language, translation=translation):
@@ -59,17 +60,19 @@ class NewProjectTest(unittest.TestCase):
                     subprocess.run(["git", "add", "-A"], cwd=request.target, check=True)  # 문서 링크 검사는 추적 파일만 봄
                     result = run_in(request.target, "scripts/repo_checks.py")
                     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-
-    def test_만든_프로젝트의_AGENTS_md는_저장소_안내를_채울_여유를_남긴다(self):
-        for language in sorted(new_project.LANGUAGE_SETUPS):
-            for translation in (False, True):
-                with self.subTest(language=language, translation=translation):
-                    parent = self.parent / f"{language}-{translation}"
-                    parent.mkdir()
-                    request = request_for(parent, language, translation)
-                    new_project.create(SOURCE, request, TODAY)
                     lines = (request.target / "AGENTS.md").read_text(encoding="utf-8").count("\n")
                     self.assertLessEqual(lines, MAX_GENERATED_AGENTS_LINES)
+
+    def test_공통_규칙의_커밋_type_목록과_검사의_목록이_같다(self):
+        request = request_for(self.parent, "python")
+        new_project.create(SOURCE, request, TODAY)
+        agents = (request.target / "AGENTS.md").read_text(encoding="utf-8")
+        line = next(line for line in agents.splitlines() if "type은 `" in line)
+        listed = re.findall(r"`([a-z]+)`", line.split("type은", 1)[1].split("이고", 1)[0])
+        spec = importlib.util.spec_from_file_location("project_repo_checks", request.target / "scripts/repo_checks.py")
+        checks = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(checks)
+        self.assertEqual(tuple(listed), checks.COMMIT_TYPES)
 
     def test_만든_프로젝트의_검사_도구와_훅_테스트가_통과한다(self):
         request = request_for(self.parent, "typescript")
