@@ -18,12 +18,9 @@ claude-home을 처음 받아서 로컬 PC와 클라우드 세션에서 쓰기까
 |---|---|---|---|
 | Git | 저장소 받기, 커밋 | `git --version` | `winget install Git.Git` |
 | GitHub CLI | 저장소 받기·만들기, PR | `gh --version` | `winget install GitHub.cli` |
-| PowerShell 7 | `scripts/new-project.ps1` 실행 | `pwsh --version` | `winget install Microsoft.PowerShell` |
 | Python 3.11 이상 | 규칙 동기화(`sync_rules.py`), 저장소 검사 | `python --version` | `winget install Python.Python.3.12` |
 | Claude Code | 규칙과 스킬 사용 | 데스크톱 앱 또는 `claude --version` | [Claude Code 문서](https://code.claude.com/docs) |
 | Codex (함께 쓸 때) | 규칙과 스킬 사용 | `codex --version` | Codex 공식 안내 |
-
-Windows에 기본으로 있는 PowerShell 5(`powershell`)가 아니라 **PowerShell 7(`pwsh`)** 이 필요합니다.
 
 설치 후 GitHub에 로그인합니다.
 
@@ -81,7 +78,7 @@ python -I C:/00.PROJECT/claude-home/scripts/sync_rules.py --user --apply
 | 저장소 검사 | claude-home에서 `python -I templates/ci/repo_checks.py --docs-exclude templates` | `문제 0개` |
 | Codex 훅 승인 | claude-home(과 각 프로젝트)에서 Codex를 열고 `/hooks` | 저장소 훅 2개를 승인함 ([훅](#훅)) |
 | 기본 브랜치 보호 (GitHub Pro 이상) | 저장소의 Settings → Rules → Rulesets | `main 보호`가 Active ([GitHub 저장소 규칙](#github-저장소-규칙)) |
-| 새 프로젝트 미리보기 | claude-home에서 `pwsh -File scripts/new-project.ps1 -Name test-app -Language python -WhatIf` | 만들 파일 목록만 나오고 폴더는 생기지 않음 |
+| 새 프로젝트 미리보기 | claude-home에서 `python -I scripts/new_project.py --name test-app --language python` | 만들 파일 목록만 나오고 폴더는 생기지 않음 |
 | 규칙 적용 | 아무 프로젝트에서 Claude Code와 Codex를 각각 열고 "지금 적용된 규칙 파일 목록 알려줘"라고 묻기 | Claude Code는 `~/.claude/rules/`, Codex는 `~/.codex/AGENTS.md`가 언급됨 |
 
 ## 5. 클라우드 세션 설정
@@ -108,7 +105,7 @@ claude-home은 **비공개 저장소**라서 아래 둘 중 하나가 필요합�
 | Environment variables | 없음 | 그 환경을 쓰는 사람이 모두 볼 수 있으므로 API 키는 넣지 않음 |
 | Network secrets | 필요할 때만 | API 키는 여기에 넣습니다. 지정한 호스트로 가는 요청에만 붙습니다 |
 
-Flutter/Dart, PowerShell(`pwsh`)은 **미리 설치되어 있지 않습니다**. Flutter 프로젝트를 클라우드에서 다루려면 그 프로젝트용 환경을 새로 만들고 Setup script에 설치 명령을 넣습니다.
+Flutter/Dart는 **미리 설치되어 있지 않습니다**. Flutter 프로젝트를 클라우드에서 다루려면 그 프로젝트용 환경을 새로 만들고 Setup script에 설치 명령을 넣습니다.
 
 ### 세션 시작
 
@@ -136,7 +133,7 @@ https://claude.ai/code?repositories=mooooonmin/claude-home&prompt=/research%20�
 
 ### 클라우드에서 하지 않는 것
 
-- **`new-project`**: `pwsh`가 없고, 세션은 넣은 저장소 밖에 새 저장소를 만들지 않습니다. 새 프로젝트는 로컬에서 만듭니다.
+- **`new-project`**: 세션은 넣은 저장소 밖에 새 저장소를 만들지 않습니다. 새 프로젝트는 로컬에서 만듭니다.
 - **`sync_rules.py --user`**: 내 PC의 사용자 설정을 위한 명령이라 클라우드와 상관없습니다.
 
 ### 결과 받기
@@ -225,7 +222,7 @@ claude-home이 규칙의 원본입니다. 규칙은 항상 여기서 고치고 �
   - claude-home을 고쳐도 프로젝트는 그대로입니다(위 3번).
   - 프로젝트에서 고친 규칙은 그 프로젝트에만 적용되고 claude-home은 바뀌지 않습니다. 모든 프로젝트에 적용할 규칙은 claude-home에서 고칩니다.
   - 프로젝트만의 규칙은 `AGENTS.md`의 공통 규칙 표시 **밖**(위쪽 저장소 안내)에 적습니다. 표시 사이는 다음 동기화 때 원본으로 덮어씁니다.
-- 새 프로젝트를 만들기 전에는 위 2번의 `git pull`을 먼저 합니다. `scripts/new-project.ps1`은 GitHub이 아니라 이 PC의 claude-home 폴더에서 파일을 복사합니다.
+- 새 프로젝트를 만들기 전에는 위 2번의 `git pull`을 먼저 합니다. `scripts/new_project.py`는 GitHub이 아니라 이 PC의 claude-home 폴더에서 파일을 복사합니다.
 - 로컬 PC에서는 프로젝트의 규칙과 사용자 설정(`~/.claude/rules/`, `~/.codex/AGENTS.md`)의 원본이 **함께** 읽힙니다. 어느 쪽도 다른 쪽을 덮어쓰지 않고, 둘이 충돌하면 Claude가 어느 쪽을 따를지 정해지지 않습니다([공식 문서: User-level rules](https://code.claude.com/docs/en/memory)). 그래서 프로젝트 규칙은 원본에 **덧붙이는** 내용으로 쓰고, 원본과 반대되는 규칙이 필요하면 claude-home을 고칠지 먼저 검토합니다.
 - 클라우드 세션에서는 [세션에 넣은 저장소의 규칙만](#클라우드에서-적용되는-것) 읽힙니다.
 
@@ -233,15 +230,13 @@ claude-home이 규칙의 원본입니다. 규칙은 항상 여기서 고치고 �
 
 | 증상 | 원인 | 해결 |
 |---|---|---|
-| `pwsh`를 찾을 수 없음 | PowerShell 7이 없음 | `winget install Microsoft.PowerShell` 후 터미널을 새로 엶 |
-| 스크립트 실행이 막힘 (`running scripts is disabled`) | 실행 정책 | `pwsh -ExecutionPolicy Bypass -File <스크립트>`로 그 실행만 허용 |
 | `git init`이 실패했다는 경고 (`Filename too long`) | Windows 경로 길이 제한(260자) | 더 짧은 경로에 만들거나 `git config --global core.longpaths true` |
-| 한글이 깨져 보임 | 터미널 인코딩 | PowerShell 7을 쓰고, 파일은 UTF-8로 저장 |
+| 한글이 깨져 보임 | 터미널 인코딩 | Windows Terminal 등 UTF-8 터미널을 쓰고, 파일은 UTF-8로 저장 |
 | `gh` 명령이 권한 오류 | 로그인 안 됨 또는 권한 부족 | `gh auth login`, 비공개 저장소는 `repo` 권한 필요 |
 | 클라우드 세션이 규칙을 안 따름 | 고른 저장소에 규칙이 없거나 `CLAUDE.md`가 `AGENTS.md`를 가져오지 않음 | 그 저장소 `AGENTS.md`에 공통 규칙 표시가 있고 `CLAUDE.md`에 `@AGENTS.md` 줄이 있는지 확인 (`repo_checks.py`가 뒤쪽을 검사) |
 | Codex가 규칙 뒷부분을 모름 | `AGENTS.md`가 Codex 기본 한도(32KiB)를 넘어 잘림 | `repo_checks.py`로 크기를 확인하고 자세한 내용을 담당 문서로 옮김 |
 | 클라우드 저장소 목록에 `claude-home`이 없음 | 비공개 저장소 접근 권한 없음 | Claude GitHub App 설치 시 그 저장소를 포함하거나 `/web-setup` |
-| 클라우드에서 `flutter`나 `pwsh`를 찾을 수 없음 | 미리 설치되어 있지 않음 | 그 프로젝트용 환경의 Setup script에 설치 명령 추가 |
+| 클라우드에서 `flutter`를 찾을 수 없음 | 미리 설치되어 있지 않음 | 그 프로젝트용 환경의 Setup script에 설치 명령 추가 |
 | Claude Code가 모든 셸 명령을 못 함 (`can't open file … agent_hooks.py`) | 훅 설정은 있는데 훅 스크립트가 없음 | claude-home에서 `sync_rules.py --target <프로젝트> --apply`로 넣거나, 훅 설정을 지움 |
 | 저장소 검사가 `.gitattributes`의 중괄호 패턴(`*.{bat,cmd,ps1}`)을 알림 | 예전 템플릿의 오류. git은 중괄호를 펼치지 않아 그 줄이 아무 파일에도 적용되지 않았음 | claude-home의 `templates/lint/.gitattributes`로 바꾸고 따로 커밋 (저장된 내용은 바뀌지 않음) |
 | Codex에서 훅이 돌지 않음 | 저장소 훅을 아직 승인하지 않았거나 훅 내용이 바뀜 | Codex에서 `/hooks`로 승인 |

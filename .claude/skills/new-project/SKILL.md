@@ -8,17 +8,17 @@ argument-hint: <이름> <java|python|typescript|dart|go> [한 줄 설명]
 
 `$ARGUMENTS`가 비어 있거나 그대로 보이면(Codex 등) 사용자 메시지에서 찾고, 없으면 묻습니다.
 
-claude-home 기준으로 새 프로젝트를 만들고 체계적으로 시작합니다. **로컬 PC에서만** 씁니다. 클라우드 세션에는 `pwsh`가 없고, 세션에 넣은 저장소 밖에 새 저장소를 만들지 않으므로 클라우드에서 실행했다면 멈추고 그렇게 안내합니다. 단계마다 무엇을 했는지 짧게 알리고, 사용자 확인이 필요한 곳에서는 멈춰서 묻습니다.
+claude-home 기준으로 새 프로젝트를 만들고 체계적으로 시작합니다. **로컬 PC에서만** 씁니다. 클라우드 세션은 세션에 넣은 저장소 밖에 새 저장소를 만들지 않으므로, 클라우드에서 실행했다면 멈추고 그렇게 안내합니다. 단계마다 무엇을 했는지 짧게 알리고, 사용자 확인이 필요한 곳에서는 멈춰서 묻습니다.
 
 ## 1. 정하기
 
 - 이름, 언어, 한 줄 설명 중 빠진 것이 있으면 먼저 묻습니다.
 - 목표가 모호하면 두세 가지만 묻습니다: 누가 쓰는지, 첫 버전에서 꼭 되어야 하는 것 하나, 하지 않을 것.
-- 번역 저장소라면 `-Translation`을 붙입니다.
+- 번역 저장소라면 `--translation`을 붙입니다.
 
 ## 2. 틀 깔기
 
-스크립트는 claude-home 저장소 안에 있습니다. 현재 폴더에 `scripts/new-project.ps1`이 없으면 claude-home 위치를 묻고 그 경로의 스크립트를 씁니다(로컬 PC 기준 보통 `C:\00.PROJECT\claude-home`).
+스크립트(`scripts/new_project.py`, Python 3.11 이상)는 claude-home 저장소 안에 있습니다. 현재 폴더에 없으면 claude-home 위치를 묻고 그 경로의 스크립트를 씁니다(로컬 PC 기준 보통 `C:\00.PROJECT\claude-home`).
 
 1. claude-home을 최신으로 받습니다. 스크립트는 GitHub이 아니라 이 PC의 claude-home 폴더에서 파일을 복사하기 때문입니다.
    ```bash
@@ -28,11 +28,11 @@ claude-home 기준으로 새 프로젝트를 만들고 체계적으로 시작합
    ```bash
    git -C <claude-home 경로> pull
    ```
-2. 미리보기로 만들 파일을 확인합니다.
+2. 미리보기로 만들 파일을 확인합니다. 아무것도 만들지 않습니다.
    ```bash
-   pwsh -File scripts/new-project.ps1 -Name <이름> -Language <언어> -Description "<설명>" -WhatIf
+   python -I scripts/new_project.py --name <이름> --language <언어> --description "<설명>"
    ```
-3. 사용자에게 위치(기본: claude-home 옆 폴더)와 파일 목록을 알리고, 그대로 `-WhatIf` 없이 실행합니다.
+3. 사용자에게 위치(기본: claude-home 옆 폴더, 바꾸려면 `--path`)와 파일 목록을 알리고, 같은 명령에 `--apply`를 붙여 만듭니다. 규칙·스킬·검사·훅 스크립트와 훅 설정도 이때 함께 들어가고 `git init -b main`까지 합니다.
 4. 이후 작업은 새 폴더의 절대 경로에서 합니다.
 
 ## 3. 뼈대 만들기
@@ -77,6 +77,21 @@ claude-home 기준으로 새 프로젝트를 만들고 체계적으로 시작합
   설정이 바뀌었는지 `gh api repos/<owner>/<이름> --jq .delete_branch_on_merge`로 확인합니다(`true`).
 - 푸시한 뒤 CI(`checks`, 언어 워크플로) 결과를 확인하고 실행 계획에 적습니다. 모두 통과하면 계획을 `completed/`로 옮깁니다.
 
+## 7. 훅 확인
+
+훅은 첫 프로젝트에서 실제로 막는지 확인해야 믿을 수 있습니다(Windows·Codex는 claude-home에서 미리 확인하지 못함). **6단계의 첫 커밋 뒤에** 합니다. 커밋이 하나도 없는 저장소에서는 첫 커밋을 위해 훅이 일부러 허용하므로, 그 전에 확인하면 막히지 않아 잘못 판단하게 됩니다. 확인한 결과는 실행 계획 "검증" 표의 "훅" 행에 적습니다.
+
+1. 이 세션에서 훅 테스트를 돌립니다.
+   ```bash
+   python -I -m unittest discover -s scripts -p "test_agent_hooks.py"
+   ```
+2. 사용자에게 새 프로젝트를 Claude Code로 **새로 열도록** 안내합니다(그 프로젝트의 `.claude/settings.json`이 그때 적용됨). 그 세션의 `main`에서 다음 명령이 "브랜치에 바로 커밋하려고 합니다"로 막혀야 합니다. `--dry-run`이라 막히지 않아도 커밋은 생기지 않습니다.
+   ```bash
+   git commit --dry-run --allow-empty -m "훅 확인"
+   ```
+3. Codex도 쓴다면 새 프로젝트에서 Codex를 열고 `/hooks`로 두 훅을 승인한 뒤 같은 명령으로 확인합니다.
+4. 막히지 않으면 `python`이 PATH에 있는지, 훅 설정이 있는지 확인합니다(claude-home의 `docs/setup.md` "훅" 절과 문제 해결).
+
 ## 끝내며
 
-만든 위치, 통과한 검사, 남은 결정(실행 계획의 남은 문제)을 짧게 보고합니다.
+만든 위치, 통과한 검사, 훅 확인 결과(또는 다음 세션에서 확인할 것), 남은 결정(실행 계획의 남은 문제)을 짧게 보고합니다.

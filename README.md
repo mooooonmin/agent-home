@@ -36,7 +36,8 @@ claude-home/
 │  └─ translation-repo/          # 새 번역 저장소용 README·NOTICE·TRANSLATION.md
 ├─ scripts/
 │  ├─ README.md                  # 스크립트별 용도와 확인 명령
-│  ├─ new-project.ps1            # 규칙·검사·문서 틀을 깐 새 프로젝트 만들기
+│  ├─ new_project.py             # 규칙·검사·문서 틀을 깐 새 프로젝트 만들기
+│  ├─ test_new_project.py        # 모든 언어·번역 조합으로 만든 프로젝트가 검사를 통과하는지 확인
 │  ├─ sync_rules.py              # 공통 규칙·스킬·검사 도구를 프로젝트, 사용자 설정, .claude/skills로 복사
 │  └─ test_sync_rules.py         # sync_rules.py 테스트
 └─ notes/                        # 조사·초안 결과물
@@ -53,7 +54,7 @@ claude-home/
 
 ### 새 프로젝트 시작하기
 
-**로컬 PC에서** 이 저장소를 열고 `new-project` 스킬로 시작합니다. 클라우드에는 `pwsh`가 없어서 쓸 수 없습니다.
+**로컬 PC에서** 이 저장소를 열고 `new-project` 스킬로 시작합니다. 클라우드 세션은 세션에 넣은 저장소 밖에 새 저장소를 만들지 않아서 쓸 수 없습니다.
 
 먼저 최신 규칙을 받습니다. 스크립트는 GitHub이 아니라 이 PC에 받아 둔 claude-home 폴더의 파일을 복사합니다.
 
@@ -69,16 +70,19 @@ Claude Code에서는 다음처럼 부릅니다. Codex에서는 `$new-project`로
 
 다음 순서로 진행합니다.
 
-1. `scripts/new-project.ps1`로 새 폴더에 린트 설정, `.gitignore`, CI(공통 + 언어별), README·AGENTS.md·CLAUDE.md·CHANGELOG, ADR 템플릿, 첫 실행 계획을 깔고 `git init` 합니다. 마지막에 `scripts/sync_rules.py`가 공통 규칙, 언어 규칙, 스킬, 검사 스크립트를 넣습니다.
+1. `scripts/new_project.py`로 새 폴더에 린트 설정, `.gitignore`, CI(공통 + 언어별), README·AGENTS.md·CLAUDE.md·CHANGELOG, ADR 템플릿, 첫 실행 계획, 공통 규칙·언어 규칙·스킬·검사·훅을 깔고 `git init` 합니다.
 2. 언어 공식 도구(Spring Initializr, `uv init`, Vite, `flutter create`, `go mod init`)로 뼈대를 만듭니다. 이미 깐 파일은 덮어쓰지 않습니다.
 3. 첫 실행 계획(`docs/exec-plans/active/0001-initial-setup.md`)을 따라 ADR, README, AGENTS.md를 채우고 첫 기능과 테스트를 만듭니다.
 4. 로컬 검사가 모두 통과하면 첫 커밋을 하고, 확인을 받은 뒤 GitHub에 올려 CI를 확인합니다. GitHub 저장소에는 병합된 PR의 브랜치를 자동으로 지우는 설정을 켭니다.
+5. 새 프로젝트를 Claude Code(와 Codex)로 다시 열어 훅이 `main` 커밋을 실제로 막는지 확인합니다.
 
-스크립트만 따로 쓸 수도 있습니다. `-WhatIf`를 붙이면 만들 파일만 보여 줍니다.
+스크립트만 따로 쓸 수도 있습니다. 기본은 미리보기라 만들 파일만 보여 주고, `--apply`를 붙여야 만듭니다. 번역 저장소는 `--translation`, 다른 상위 폴더는 `--path`를 붙입니다.
 
 ```bash
-pwsh -File scripts/new-project.ps1 -Name my-app -Language python -Description "할 일 목록 CLI" -WhatIf
+python -I scripts/new_project.py --name my-app --language python --description "할 일 목록 CLI"
 ```
+
+규칙이나 템플릿을 고치면 `scripts/test_new_project.py`가 모든 언어·번역 조합으로 프로젝트를 만들어 저장소 검사가 통과하는지 CI에서 확인합니다.
 
 새 프로젝트의 규칙은 만들 때 복사한 **사본**입니다. 프로젝트에서 고친 규칙은 그 프로젝트에만 적용되고 claude-home은 바뀌지 않습니다. 원본을 고친 뒤 반영하는 법과 주의점은 [초기 설정의 규칙을 고친 뒤](docs/setup.md#규칙을-고친-뒤)를 봅니다.
 
