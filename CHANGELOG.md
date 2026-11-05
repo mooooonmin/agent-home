@@ -12,6 +12,7 @@ claude-home의 주요 변경 사항을 기록합니다. 형식은 [Keep a Change
 
 ### 변경
 
+- GitHub Actions를 Node 24로 도는 주 버전으로 올림: `checkout@v7`, `setup-go@v7`, `setup-java@v6`, `setup-python@v7`, `setup-node@v7`, `golangci-lint-action@v9`. GitHub이 Node 20 실행을 지원 종료함 (`flutter-action@v2`는 composite라 그대로)
 - 공통 규칙의 커밋 절을 48줄에서 15줄로 줄임. 새 프로젝트 `AGENTS.md`가 198~200줄에서 165~167줄로 줄어듦 ([ADR 0006](docs/adr/0006-check-commit-titles-instead-of-long-commit-rules.md))
 
 ## 2026-11-05
