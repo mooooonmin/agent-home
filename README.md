@@ -74,6 +74,7 @@ Claude Code에서는 다음처럼 부릅니다. Codex에서는 `$new-project`로
 2. 언어 공식 도구(Spring Initializr, `uv init`, Vite, `flutter create`, `go mod init`)로 뼈대를 만듭니다. 이미 깐 파일은 덮어쓰지 않습니다.
 3. 첫 실행 계획(`docs/exec-plans/active/0001-initial-setup.md`)을 따라 ADR, README, AGENTS.md를 채우고 첫 기능과 테스트를 만듭니다.
 4. 로컬 검사가 모두 통과하면 첫 커밋을 하고, 확인을 받은 뒤 GitHub에 올려 CI를 확인합니다. GitHub 저장소에는 병합된 PR의 브랜치를 자동으로 지우는 설정을 켭니다.
+5. 새 프로젝트를 Claude Code(와 Codex)로 다시 열어 훅이 `main` 커밋을 실제로 막는지 확인합니다.
 
 스크립트만 따로 쓸 수도 있습니다. 기본은 미리보기라 만들 파일만 보여 주고, `--apply`를 붙여야 만듭니다. 번역 저장소는 `--translation`, 다른 상위 폴더는 `--path`를 붙입니다.
 

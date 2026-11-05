@@ -77,6 +77,21 @@ claude-home 기준으로 새 프로젝트를 만들고 체계적으로 시작합
   설정이 바뀌었는지 `gh api repos/<owner>/<이름> --jq .delete_branch_on_merge`로 확인합니다(`true`).
 - 푸시한 뒤 CI(`checks`, 언어 워크플로) 결과를 확인하고 실행 계획에 적습니다. 모두 통과하면 계획을 `completed/`로 옮깁니다.
 
+## 7. 훅 확인
+
+훅은 첫 프로젝트에서 실제로 막는지 확인해야 믿을 수 있습니다(Windows·Codex는 claude-home에서 미리 확인하지 못함). 확인한 결과는 실행 계획 "검증" 표의 "훅" 행에 적습니다.
+
+1. 이 세션에서 훅 테스트를 돌립니다.
+   ```bash
+   python -I -m unittest discover -s scripts -p "test_agent_hooks.py"
+   ```
+2. 사용자에게 새 프로젝트를 Claude Code로 **새로 열도록** 안내합니다(그 프로젝트의 `.claude/settings.json`이 그때 적용됨). 그 세션의 `main`에서 다음 명령이 "브랜치에 바로 커밋하려고 합니다"로 막혀야 합니다. `--dry-run`이라 막히지 않아도 커밋은 생기지 않습니다.
+   ```bash
+   git commit --dry-run --allow-empty -m "훅 확인"
+   ```
+3. Codex도 쓴다면 새 프로젝트에서 Codex를 열고 `/hooks`로 두 훅을 승인한 뒤 같은 명령으로 확인합니다.
+4. 막히지 않으면 `python`이 PATH에 있는지, 훅 설정이 있는지 확인합니다(claude-home의 `docs/setup.md` "훅" 절과 문제 해결).
+
 ## 끝내며
 
-만든 위치, 통과한 검사, 남은 결정(실행 계획의 남은 문제)을 짧게 보고합니다.
+만든 위치, 통과한 검사, 훅 확인 결과(또는 다음 세션에서 확인할 것), 남은 결정(실행 계획의 남은 문제)을 짧게 보고합니다.
