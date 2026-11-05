@@ -3,6 +3,7 @@
 실행:  python3 -m unittest discover -s scripts -p "test_*.py"
 """
 import importlib.util
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -36,6 +37,23 @@ class TempRepo:
         path = self.root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
+
+
+class GitRepo(TempRepo):
+    """git 저장소인 임시 폴더. 커밋 제목 검사용입니다."""
+
+    def __enter__(self):
+        super().__enter__()
+        self.git("init", "-q", "-b", "main")
+        self.git("config", "user.email", "test@example.com")
+        self.git("config", "user.name", "test")
+        return self
+
+    def git(self, *args):
+        return subprocess.run(["git", *args], cwd=self.root, check=True, capture_output=True, text=True).stdout
+
+    def commit(self, title):
+        self.git("commit", "-q", "--allow-empty", "-m", title)
 
 
 class DocLinksTest(unittest.TestCase):
@@ -206,6 +224,44 @@ class RepoChecksTest(unittest.TestCase):
             repo.write("docs/guide.md", "# 안내\n")
             repo.write("requirements.txt", "requests==2.32.3\n")
             self.assertEqual(repo_checks.run_all(repo.root, []), [])
+
+
+class CommitTitleTest(unittest.TestCase):
+    def test_형식에_맞는_제목과_git의_되돌리기_제목은_통과한다(self):
+        for title in ("docs(ko): 9장 오류 처리 번역", "feat!: 설정 형식 변경", 'Revert "feat: 설정 추가"', 'Reapply "feat: 설정 추가"'):
+            with self.subTest(title=title):
+                self.assertIsNone(repo_checks.commit_title_problem(title))
+
+    def test_형식이_아니거나_결과를_알_수_없는_제목을_찾는다(self):
+        for title in ("Update README.md", "docs:띄어쓰기 없음", "wip: 작업 중", "fix: 수정"):
+            with self.subTest(title=title):
+                self.assertIsNotNone(repo_checks.commit_title_problem(title))
+
+    def test_기본으로는_아직_올리지_않은_커밋만_본다(self):
+        with GitRepo() as repo:
+            repo.commit("Initial commit")
+            repo.git("update-ref", "refs/remotes/origin/main", "HEAD")  # 이미 올린 커밋으로 만듦
+            repo.commit("docs: 안내 추가")
+            repo.commit("Update README.md")
+            errors = repo_checks.check_commit_titles(repo.root)
+            self.assertEqual(len(errors), 1)
+            self.assertIn("Update README.md", errors[0])
+
+    def test_범위를_주면_그_범위의_병합_아닌_커밋을_본다(self):
+        with GitRepo() as repo:
+            repo.commit("chore: 프로젝트 초기 구성")
+            repo.git("checkout", "-q", "-b", "work")
+            repo.commit("fix: 수정")
+            repo.git("checkout", "-q", "main")
+            repo.git("merge", "-q", "--no-ff", "-m", "Merge branch 'work'", "work")
+            errors = repo_checks.check_commit_titles(repo.root, "main~1..main")
+            self.assertEqual(len(errors), 1)
+            self.assertIn("fix: 수정", errors[0])
+
+    def test_읽을_수_없는_범위는_알리고_커밋_없는_저장소는_통과한다(self):
+        with GitRepo() as repo:
+            self.assertEqual(repo_checks.check_commit_titles(repo.root), [])
+            self.assertEqual(len(repo_checks.check_commit_titles(repo.root, "origin/main..HEAD")), 1)
 
 
 if __name__ == "__main__":

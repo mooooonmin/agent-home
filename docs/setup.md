@@ -160,7 +160,7 @@ https://claude.ai/code?repositories=mooooonmin/claude-home&prompt=/research%20�
 
 | 훅 | 언제 | 하는 일 |
 |---|---|---|
-| `pre-bash` | 셸 명령을 실행하기 전 | `main`·`master`에 바로 커밋하거나 그쪽으로 푸시하는 명령을 막고 이유를 알려 줌. 앞선 `cd`, `git -C`, `sh -c`, `$(...)`를 따라가고 heredoc 본문(커밋 메시지)은 건너뜀. 커밋이 없는 새 저장소의 첫 커밋과, 원격 브랜치를 하나도 모르는 새 저장소의 첫 푸시(`new-project`의 첫 업로드)는 허용 |
+| `pre-bash` | 셸 명령을 실행하기 전 | `main`·`master`에 바로 커밋하거나 그쪽으로 푸시하는 명령을 막고 이유를 알려 줌. 앞선 `cd`, `git -C`, `sh -c`, `$(...)`를 따라가고 heredoc 본문(커밋 메시지)은 건너뜀. 커밋이 없는 새 저장소의 첫 커밋과, 원격 브랜치를 하나도 모르는 새 저장소의 첫 푸시(`new-project`의 첫 업로드)는 허용. 커밋 제목도 검사: `git commit -m "제목"`처럼 명령에 적힌 제목은 커밋 전에, 푸시 전에는 아직 올리지 않은 커밋의 제목 |
 | `stop` | 응답을 끝내기 전 | 커밋하지 않은 변경이나 어느 원격에도 올리지 않은 커밋이 있으면 저장소 검사(`repo_checks.py`)를 돌리고, 실패하면 끝내지 않고 고치게 함. 한 번 막은 뒤에는 다시 막지 않음 |
 
 | 도구 | 설정 파일 | 처음 할 일 |
@@ -239,6 +239,7 @@ claude-home이 규칙의 원본입니다. 규칙은 항상 여기서 고치고 �
 | 클라우드에서 `flutter`를 찾을 수 없음 | 미리 설치되어 있지 않음 | 그 프로젝트용 환경의 Setup script에 설치 명령 추가 |
 | Claude Code가 모든 셸 명령을 못 함 (`can't open file … agent_hooks.py`) | 훅 설정은 있는데 훅 스크립트가 없음 | claude-home에서 `sync_rules.py --target <프로젝트> --apply`로 넣거나, 훅 설정을 지움 |
 | 저장소 검사가 `.gitattributes`의 중괄호 패턴(`*.{bat,cmd,ps1}`)을 알림 | 예전 템플릿의 오류. git은 중괄호를 펼치지 않아 그 줄이 아무 파일에도 적용되지 않았음 | claude-home의 `templates/lint/.gitattributes`로 바꾸고 따로 커밋 (저장된 내용은 바뀌지 않음) |
+| 저장소 검사가 커밋 제목을 알림 | 제목이 `type(scope): 설명` 형식이 아니거나 설명이 "수정"뿐임 ([커밋 규칙](../AGENTS.md#커밋)) | 올리기 전이면 `git commit --amend`로 고침. 이미 PR에 올렸으면 그 작업 브랜치에서 `git rebase -i <기준 브랜치>`로 제목을 고친 뒤 `git push --force-with-lease` |
 | Codex에서 훅이 돌지 않음 | 저장소 훅을 아직 승인하지 않았거나 훅 내용이 바뀜 | Codex에서 `/hooks`로 승인 |
 | 규칙을 고쳤는데 로컬에 반영 안 됨 | 동기화를 안 함 | `git pull` 후 `sync_rules.py --user --apply` 다시 실행 |
 | 스킬 사본이 원본과 다르다는 검사 오류 | `.agents/skills/`만 고치고 `.claude/skills/`에 복사하지 않음 | claude-home에서는 `sync_rules.py --mirror --apply`, 프로젝트에서는 원본 파일을 그대로 복사 |

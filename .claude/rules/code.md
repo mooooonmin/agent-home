@@ -27,7 +27,7 @@ claude-home 공통 규칙의 일부로, 코드를 다룰 때 읽습니다. 항�
 - **규칙은 검사로 강제**: 계층 방향처럼 지켜야 할 구조 규칙은 문서에만 적지 말고 테스트로 만듭니다. 어기면 CI가 실패해야 합니다. 아래 템플릿은 claude-home 저장소에 있습니다.
   - Java: ArchUnit (claude-home의 `templates/lint/java/ArchitectureTest.java`)
   - Python: import-linter (claude-home의 `templates/lint/python/importlinter.toml`)
-  - 저장소 공통 규칙(생성물 커밋, 버전 고정, `latest` 태그, 문서 링크, 에이전트 지시 파일): `scripts/repo_checks.py` (원본: claude-home의 `templates/ci/`)
+  - 저장소 공통 규칙(생성물 커밋, 버전 고정, `latest` 태그, 문서 링크, 에이전트 지시 파일, 커밋 제목): `scripts/repo_checks.py` (원본: claude-home의 `templates/ci/`)
   - 검사 도구를 직접 만들었다면 그 도구에도 테스트를 붙입니다.
 - **불변 우선**: 값을 바꾸기보다 새 값을 만듭니다. 공유 상태와 부수 효과는 최소화하고, 있으면 드러나게 둡니다.
 - 큰 설계 결정(라이브러리 선택, 구조 변경, 저장 방식)은 ADR로 남깁니다. 방법은 `writing-docs.md`의 문서 구성을 따릅니다.

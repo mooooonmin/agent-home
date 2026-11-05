@@ -4,12 +4,12 @@
 
 | 파일 | 용도 | 넣는 곳 |
 |---|---|---|
-| `repo_checks.py` | 생성물 커밋, 버전 고정, `latest` 태그, 충돌 표시, 셸 문법, 문서 링크, 공백 오류, 에이전트 지시 파일(`AGENTS.md` 줄 수·크기, `CLAUDE.md`의 `@AGENTS.md`, 스킬 원본과 사본 일치), 훅 스크립트 존재, `.gitattributes`·`.gitignore`의 중괄호 패턴을 한 번에 검사 | `scripts/` |
+| `repo_checks.py` | 생성물 커밋, 버전 고정, `latest` 태그, 충돌 표시, 셸 문법, 문서 링크, 공백 오류, 에이전트 지시 파일(`AGENTS.md` 줄 수·크기, `CLAUDE.md`의 `@AGENTS.md`, 스킬 원본과 사본 일치), 훅 스크립트 존재, `.gitattributes`·`.gitignore`의 중괄호 패턴, 커밋 제목(기본은 아직 올리지 않은 커밋, `--commits 범위`를 주면 그 범위)을 한 번에 검사 | `scripts/` |
 | `check_doc_links.py` | 문서 내부 링크·이미지·제목 앵커 검사 (`repo_checks.py`가 불러 씀) | `scripts/` |
 | `test_checks.py` | 위 두 검사 도구의 테스트 | `scripts/` |
-| `agent_hooks.py` | Claude Code·Codex 공통 훅: 기본 브랜치 직접 커밋·푸시 차단, 끝내기 전 저장소 검사 ([훅](../../docs/setup.md#훅)) | `scripts/` |
+| `agent_hooks.py` | Claude Code·Codex 공통 훅: 기본 브랜치 직접 커밋·푸시 차단, 커밋·푸시 전 커밋 제목 검사(`repo_checks.py`를 불러 씀), 끝내기 전 저장소 검사 ([훅](../../docs/setup.md#훅)) | `scripts/` |
 | `test_agent_hooks.py` | 훅 테스트 | `scripts/` |
-| `checks.yml` | 저장소 검사 GitHub Actions | `.github/workflows/` |
+| `checks.yml` | 저장소 검사 GitHub Actions. PR이면 기준 브랜치 이후 커밋의 제목도 검사 | `.github/workflows/` |
 | `lang/<언어>.yml` | 언어별 빌드·포맷·린트·테스트 GitHub Actions (java, python, typescript, dart, go) | `.github/workflows/` |
 
 새 프로젝트는 `scripts/new_project.py`가 이 파일들을 알맞은 위치에 넣어 줍니다. 검사·훅 스크립트와 테스트는 `scripts/sync_rules.py`가 넣고, 원본이 바뀌면 같은 명령으로 다시 반영합니다.

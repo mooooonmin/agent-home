@@ -5,6 +5,9 @@
                     앞선 cd, git -C, sh -c, $(...)를 따라가고 heredoc 본문은 건너뜁니다. 커밋이 하나도 없는 새 저장소의
                     첫 커밋과, 원격 브랜치를 하나도 모르는 새 저장소의 첫 푸시는 막지 않습니다.
                     셸 문장을 읽어 판단하는 보조 장치라 완벽하지 않습니다. GitHub 저장소 규칙으로도 기본 브랜치를 보호하세요.
+                    같은 폴더에 repo_checks.py가 있으면 커밋 제목도 봅니다: `git commit -m "제목"`처럼 제목이 명령에
+                    그대로 있으면 커밋 전에, `git push` 전에는 아직 올리지 않은 커밋의 제목을 검사합니다.
+                    heredoc·$(...)·파일로 준 제목은 읽지 않으므로, 커밋과 푸시를 한 명령으로 하면 CI에서 잡힙니다.
   stop CHECK [...]  응답을 끝내기 전: 커밋하지 않은 변경이나 올리지 않은 커밋이 있으면 `python -I CHECK ...`를
                     저장소 루트에서 돌리고, 실패하면 끝내지 않고 고치게 합니다. 이미 한 번 막았으면(stop_hook_active)
                     다시 막지 않습니다.
@@ -16,6 +19,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import re
@@ -37,9 +41,12 @@ ENV_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 DIRECTORY_COMMANDS = frozenset({"cd", "pushd"})
 NESTED_SHELLS = frozenset({"sh", "bash", "zsh", "dash"})
 GIT_PROGRAMS = frozenset({"git", "git.exe"})
+# `-m`, `-am`처럼 메시지 값을 받는 짧은 옵션 묶음
+MESSAGE_FLAG = re.compile(r"-[A-Za-z]*m")
 GIT_OPTIONS_WITH_VALUE = frozenset({"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--exec-path"})
 PUSH_EVERYTHING = frozenset({"--all", "--mirror", "--branches"})
 PUSH_OPTIONS_WITH_VALUE = frozenset({"-o", "--push-option", "--repo", "--receive-pack", "--exec"})
+TITLE_RULE = "커밋 제목이 커밋 규칙(공통 규칙: 커밋과 PR)에 맞지 않습니다."
 BRANCH_RULE = "기본 브랜치에 바로 커밋·푸시하지 않습니다(공통 규칙: 브랜치와 PR). 작업 브랜치를 만들어 PR로 올리세요."
 
 
@@ -184,6 +191,44 @@ def blocked_reason(call: GitCall, state: RepoState) -> str | None:
     return None
 
 
+def load_repo_checks():
+    """같은 폴더의 repo_checks.py. 없으면 커밋 제목은 검사하지 않습니다."""
+    path = Path(__file__).with_name("repo_checks.py")
+    if not path.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location("repo_checks", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def commit_message(args: tuple[str, ...]) -> str | None:
+    """명령에 그대로 적힌 커밋 메시지. `-F`, heredoc, $(...)처럼 명령만으로 알 수 없으면 None."""
+    for index, arg in enumerate(args):
+        if (arg == "--message" or MESSAGE_FLAG.fullmatch(arg)) and index + 1 < len(args):
+            message = args[index + 1]
+        elif arg.startswith("--message="):
+            message = arg.partition("=")[2]
+        elif arg.startswith("-m") and len(arg) > 2:
+            message = arg[2:]
+        else:
+            continue
+        return None if "$(" in message or "`" in message else message
+    return None
+
+
+def commit_title_reason(call: GitCall, directory: Path, checks) -> str | None:
+    if call.subcommand == "commit":
+        message = commit_message(call.args)
+        title = message.strip().split("\n")[0].strip() if message else ""
+        problem = checks.commit_title_problem(title) if title else None
+        return f"{TITLE_RULE} {problem}: {title}" if problem else None
+    problems = checks.check_commit_titles(directory)  # push: 아직 올리지 않은 커밋
+    if not problems:
+        return None
+    return f"{TITLE_RULE} 푸시하기 전에 고치세요.\n" + "\n".join(problems)
+
+
 def git_output(directory: Path, *args: str) -> str | None:
     try:
         result = subprocess.run(
@@ -209,11 +254,14 @@ def pre_bash(payload: dict) -> int:
     if not isinstance(command, str):
         return EXIT_ALLOW
     cwd = Path(payload.get("cwd") or os.getcwd())
+    checks = load_repo_checks()
     for call in git_calls(command):
         if call.subcommand not in ("commit", "push"):
             continue
         directory = cwd / call.directory if call.directory else cwd
         reason = blocked_reason(call, read_repo_state(directory))
+        if not reason and checks:
+            reason = commit_title_reason(call, directory, checks)
         if reason:
             print(reason, file=sys.stderr)
             return EXIT_BLOCK

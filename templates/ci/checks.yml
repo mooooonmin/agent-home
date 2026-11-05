@@ -1,6 +1,6 @@
 # 프로젝트의 .github/workflows/checks.yml로 복사합니다.
 # 같은 폴더의 검사·훅 스크립트와 테스트는 claude-home의 scripts/sync_rules.py가 scripts/에 넣습니다.
-# 푸시와 PR마다 저장소 규칙(생성물·버전 고정·latest 태그·충돌 표시·셸 문법·문서 링크)을 검사합니다.
+# 푸시와 PR마다 저장소 규칙(생성물·버전 고정·latest 태그·충돌 표시·셸 문법·문서 링크·커밋 제목)을 검사합니다.
 name: checks
 
 on:
@@ -20,9 +20,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # PR의 커밋 제목을 기준 브랜치와 비교해 검사하려고 전체 기록을 받음
       - name: 검사 도구 자체 테스트
         run: python3 -I -m unittest discover -s scripts -p "test_checks.py"
       - name: 에이전트 훅 테스트
         run: python3 -I -m unittest discover -s scripts -p "test_agent_hooks.py"
       - name: 저장소 규칙 검사
-        run: python3 -I scripts/repo_checks.py
+        env:
+          # PR이면 기준 브랜치 이후의 커밋 제목을 검사합니다. 비어 있으면(푸시) 아직 원격에 없는 커밋만 봅니다.
+          COMMIT_RANGE: ${{ github.event_name == 'pull_request' && format('origin/{0}..HEAD', github.base_ref) || '' }}
+        run: python3 -I scripts/repo_checks.py --commits "$COMMIT_RANGE"

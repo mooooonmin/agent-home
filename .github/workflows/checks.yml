@@ -19,9 +19,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # PR의 커밋 제목을 기준 브랜치와 비교해 검사하려고 전체 기록을 받음
       - name: 검사 도구 자체 테스트
         run: python3 -I -m unittest discover -s templates/ci -p "test_*.py"
       - name: 동기화 도구 테스트
         run: python3 -I -m unittest discover -s scripts -p "test_*.py"
       - name: 저장소 규칙 검사
-        run: python3 -I templates/ci/repo_checks.py --docs-exclude templates
+        env:
+          # PR이면 기준 브랜치 이후의 커밋 제목을 검사합니다. 비어 있으면(푸시) 아직 원격에 없는 커밋만 봅니다.
+          COMMIT_RANGE: ${{ github.event_name == 'pull_request' && format('origin/{0}..HEAD', github.base_ref) || '' }}
+        run: python3 -I templates/ci/repo_checks.py --docs-exclude templates --commits "$COMMIT_RANGE"
