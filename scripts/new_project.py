@@ -85,12 +85,13 @@ class ProjectRequest:
     name: str
     language: str
     description: str
-    rule_sets: frozenset[str]  # 언어 이름과, 번역 저장소면 "translation"
+    translation: bool  # 번역 저장소면 번역 규칙·스킬·TRANSLATION.md도 넣음
     target: Path
 
     @property
-    def translation(self) -> bool:
-        return sync_rules.TRANSLATION in self.rule_sets
+    def rule_sets(self) -> set[str]:
+        """sync_rules.plan_project에 넘길 규칙 묶음."""
+        return {self.language} | ({sync_rules.TRANSLATION} if self.translation else set())
 
 
 def read_template(source: Path, rel: str) -> str:
@@ -108,27 +109,25 @@ def agents_md(source: Path, request: ProjectRequest) -> str:
     return sync_rules.merge_block(text, block)
 
 
-def exec_plans_readme(today: str) -> str:
-    return f"""# 실행 계획
+def fill(text: str, replacements: dict[str, str]) -> str:
+    """템플릿의 자리표시를 바꿉니다. 템플릿 모양이 바뀌어 자리표시가 없으면 멈춥니다(테스트가 잡도록)."""
+    for old, new in replacements.items():
+        if old not in text:
+            raise ValueError(f"템플릿에서 바꿀 부분을 찾지 못했습니다: {old!r}")
+        text = text.replace(old, new)
+    return text
 
-여러 세션에 걸치는 작업의 계획과 기록입니다. 기능 동작은 `README.md`와 `docs/`, 설계 결정은 [ADR](../adr/)이 담당합니다.
 
-## 진행 중
-
-| 계획 | 목표 | 시작 |
-|---|---|---|
-| [초기 구축](active/0001-initial-setup.md) | 뼈대, 검사, 문서를 갖춘 첫 동작 버전 | {today} |
-
-## 완료
-
-아직 없습니다.
-
-## 관리 규칙
-
-- 새 계획은 [plan-template.md](plan-template.md)를 복사해 `active/`에 만들고 위 표에 추가합니다.
-- 끝나면 최종 커밋과 검증 결과를 적고 `completed/`로 옮긴 뒤 표를 옮깁니다.
-- 당장 하지 않을 개선 후보가 생기면 `tech-debt-tracker.md`를 만들어 적습니다.
-"""
+def exec_plans_readme(source: Path, today: str) -> str:
+    template = read_template(source, "templates/docs/exec-plans/README.md")
+    return fill(template, {
+        "| [<제목>](active/<파일>.md) | <한 줄> | YYYY-MM-DD |":
+            f"| [초기 구축](active/0001-initial-setup.md) | 뼈대, 검사, 문서를 갖춘 첫 동작 버전 | {today} |",
+        "| 기록 | 범위 | 근거 |\n|---|---|---|\n| [<제목>](completed/<파일>.md) | <한 줄> | 커밋 `<sha>` |":
+            "아직 없습니다.",
+        # 새 프로젝트에는 아직 개선 목록 파일이 없어 링크가 깨지지 않게 이름만 둡니다.
+        "[tech-debt-tracker.md](tech-debt-tracker.md)에 적습니다": "`tech-debt-tracker.md`를 만들어 적습니다",
+    })
 
 
 def initial_plan(request: ProjectRequest, today: str) -> str:
@@ -215,7 +214,7 @@ def base_files(source: Path, request: ProjectRequest, today: str) -> dict[str, s
     files["README.md"] = readme.replace("<프로젝트 이름>", request.name).replace(
         "<무엇을 하는 프로젝트인지 한두 문장>", request.description
     )
-    files["docs/exec-plans/README.md"] = exec_plans_readme(today)
+    files["docs/exec-plans/README.md"] = exec_plans_readme(source, today)
     files["docs/exec-plans/active/0001-initial-setup.md"] = initial_plan(request, today)
     return files
 
@@ -235,13 +234,15 @@ def check_target(target: Path) -> None:
 
 def git_init(target: Path) -> str | None:
     """경고 문구를 돌려줍니다. 성공하면 None."""
-    try:
-        result = subprocess.run(["git", "init", "-q", "-b", "main"], cwd=target, capture_output=True, text=True)
-    except OSError as error:
-        return f"git을 실행하지 못했습니다({error}). 직접 실행하세요: git -C \"{target}\" init -b main"
-    if result.returncode:
-        return (f"git init이 실패했습니다({result.stderr.strip()}). 경로가 너무 길지 않은지 확인하고 직접 실행하세요: "
-                f"git -C \"{target}\" init -b main")
+    # `git init -b`는 Git 2.28 이상이라, 오래된 git에서도 되는 init + symbolic-ref로 main을 정합니다.
+    for command in (["git", "init", "-q"], ["git", "symbolic-ref", "HEAD", "refs/heads/main"]):
+        try:
+            result = subprocess.run(command, cwd=target, capture_output=True, text=True)
+        except OSError as error:
+            return f"git을 실행하지 못했습니다({error}). 직접 실행하세요: git -C \"{target}\" init -b main"
+        if result.returncode:
+            return (f"{' '.join(command)}이 실패했습니다({result.stderr.strip()}). 경로가 너무 길지 않은지 확인하고 "
+                    f"직접 실행하세요: git -C \"{target}\" init -b main")
     return None
 
 
@@ -249,18 +250,21 @@ def preview(source: Path, request: ProjectRequest, today: str) -> sync_rules.Pla
     """폴더를 만들지 않고 만들 파일을 모읍니다. sync_rules.py가 넣을 파일 중 겹치는 것은 뺍니다."""
     plan = base_plan(source, request, today)
     planned = {change.path for change in plan.changes}
-    synced = sync_rules.plan_project(source, request.target, set(request.rule_sets))
+    synced = sync_rules.plan_project(source, request.target, request.rule_sets)
     plan.changes += [change for change in synced.changes if change.path not in planned]
     return plan
 
 
 def create(source: Path, request: ProjectRequest, today: str) -> sync_rules.Plan:
     check_target(request.target)
-    plan = base_plan(source, request, today)
-    sync_rules.apply(plan)
-    warning = git_init(request.target)
-    synced = sync_rules.plan_project(source, request.target, set(request.rule_sets))
-    sync_rules.apply(synced)
+    plan = base_plan(source, request, today)  # 템플릿을 모두 읽은 뒤에 쓰기 시작해, 템플릿 문제로 반쯤 만들어지지 않게 함
+    try:
+        sync_rules.apply(plan)
+        warning = git_init(request.target)
+        synced = sync_rules.plan_project(source, request.target, request.rule_sets)
+        sync_rules.apply(synced)
+    except (ValueError, OSError) as error:
+        raise ValueError(f"만들다 멈췄습니다({error}). {request.target} 폴더를 지운 뒤 다시 실행하세요") from error
     plan.changes += synced.changes
     plan.unchanged += synced.unchanged
     plan.warnings += synced.warnings + ([warning] if warning else [])
@@ -279,8 +283,7 @@ def parse_request(argv: list[str] | None) -> tuple[ProjectRequest, bool]:
     if not NAME_PATTERN.match(args.name):
         parser.error(f"--name은 영문·숫자로 시작하고 영문·숫자·.-_만 씁니다: {args.name}")
     parent = Path(args.path).resolve() if args.path else SOURCE_ROOT.parent
-    rule_sets = {args.language} | ({sync_rules.TRANSLATION} if args.translation else set())
-    request = ProjectRequest(args.name, args.language, args.description, frozenset(rule_sets), parent / args.name)
+    request = ProjectRequest(args.name, args.language, args.description, args.translation, parent / args.name)
     return request, args.apply
 
 

@@ -20,12 +20,10 @@ spec.loader.exec_module(new_project)
 
 SOURCE = new_project.SOURCE_ROOT
 TODAY = "2026-01-02"
-TRANSLATION = new_project.sync_rules.TRANSLATION
 
 
 def request_for(parent: Path, language: str, translation: bool = False) -> "new_project.ProjectRequest":
-    rule_sets = frozenset({language} | ({TRANSLATION} if translation else set()))
-    return new_project.ProjectRequest("demo-app", language, "시험용 앱", rule_sets, parent / "demo-app")
+    return new_project.ProjectRequest("demo-app", language, "시험용 앱", translation, parent / "demo-app")
 
 
 def run_in(project: Path, *args: str) -> subprocess.CompletedProcess:
@@ -88,6 +86,17 @@ class NewProjectTest(unittest.TestCase):
         for rel in ("TRANSLATION.md", ".claude/rules/translation.md", ".agents/skills/translate-chapter/SKILL.md"):
             self.assertTrue((request.target / rel).is_file(), rel)
         self.assertIn("번역 저장소라면", (request.target / "AGENTS.md").read_text(encoding="utf-8"))
+
+    def test_실행_계획_목록은_템플릿을_채워_만든다(self):
+        request = request_for(self.parent, "python")
+        new_project.create(SOURCE, request, TODAY)
+        text = (request.target / "docs/exec-plans/README.md").read_text(encoding="utf-8")
+        self.assertIn(f"| [초기 구축](active/0001-initial-setup.md) | 뼈대, 검사, 문서를 갖춘 첫 동작 버전 | {TODAY} |", text)
+        self.assertNotIn("<제목>", text)
+
+    def test_템플릿_모양이_바뀌면_멈춘다(self):
+        with self.assertRaises(ValueError):
+            new_project.fill("# 바뀐 템플릿\n", {"<제목>": "초기 구축"})
 
     def test_비어_있지_않은_폴더에는_만들지_않는다(self):
         request = request_for(self.parent, "python")
