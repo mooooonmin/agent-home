@@ -137,10 +137,14 @@ def source_version(source: Path) -> str:
             return None
         return result.stdout.strip() if result.returncode == 0 else None
 
-    commit = git("log", "-1", "--format=%h %cs")
+    # %cs(짧은 날짜)는 Git 2.21 이상이라, 오래전부터 있는 %ci에서 날짜만 씁니다.
+    commit = git("log", "-1", "--format=%h %ci")
     if not commit:
         return "알 수 없음"
-    return f"{commit} (커밋하지 않은 변경 포함)" if git("status", "--porcelain") else commit
+    short_hash, date = commit.split()[:2]
+    # 추적하는 파일의 변경만 셉니다. 추적하지 않는 노트 초안 등은 복사되는 규칙과 상관없습니다.
+    dirty = git("status", "--porcelain", "--untracked-files=no")
+    return f"{short_hash} {date}" + (" (커밋하지 않은 변경 포함)" if dirty else "")
 
 
 def version_text(source: Path) -> str:
@@ -257,7 +261,10 @@ def plan_project(source: Path, target: Path, rule_sets: set[str]) -> Plan:
 
     for name in LEGACY_RULE_FILES:
         planner.delete_legacy(rules / name, "AGENTS.md 위쪽 저장소 안내")
-    planner.write_text(target / VERSION_FILE, version_text(source))
+    # 실제로 바뀌는 파일이 있을 때만 시점을 새로 적습니다. 상관없는 claude-home 커밋 때문에 매번 바뀌지 않게 합니다.
+    version_file = target / VERSION_FILE
+    if planner.plan.changes or not version_file.is_file():
+        planner.write_text(version_file, version_text(source))
     return planner.plan
 
 
