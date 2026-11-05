@@ -20,6 +20,8 @@ spec.loader.exec_module(new_project)
 
 SOURCE = new_project.SOURCE_ROOT
 TODAY = "2026-01-02"
+# AGENTS.md 한도(200줄) 안에서 자리표시를 실제 내용으로 채울 여유 20줄을 남깁니다.
+MAX_GENERATED_AGENTS_LINES = 180
 
 
 def request_for(parent: Path, language: str, translation: bool = False) -> "new_project.ProjectRequest":
@@ -57,6 +59,17 @@ class NewProjectTest(unittest.TestCase):
                     subprocess.run(["git", "add", "-A"], cwd=request.target, check=True)  # 문서 링크 검사는 추적 파일만 봄
                     result = run_in(request.target, "scripts/repo_checks.py")
                     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_만든_프로젝트의_AGENTS_md는_저장소_안내를_채울_여유를_남긴다(self):
+        for language in sorted(new_project.LANGUAGE_SETUPS):
+            for translation in (False, True):
+                with self.subTest(language=language, translation=translation):
+                    parent = self.parent / f"{language}-{translation}"
+                    parent.mkdir()
+                    request = request_for(parent, language, translation)
+                    new_project.create(SOURCE, request, TODAY)
+                    lines = (request.target / "AGENTS.md").read_text(encoding="utf-8").count("\n")
+                    self.assertLessEqual(lines, MAX_GENERATED_AGENTS_LINES)
 
     def test_만든_프로젝트의_검사_도구와_훅_테스트가_통과한다(self):
         request = request_for(self.parent, "typescript")

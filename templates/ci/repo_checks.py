@@ -14,10 +14,13 @@
 - git 패턴 파일: `.gitattributes`·`.gitignore`의 중괄호 패턴(`*.{a,b}`). git은 중괄호를 펼치지 않아 아무 파일에도 맞지 않음
 - 에이전트 훅 설정: `.claude/settings.json`, `.codex/hooks.json`이 가리키는 Python 스크립트가 있는지
   (없으면 python이 종료 코드 2로 끝나 두 도구 모두 훅이 "막음"으로 처리함)
+- 커밋 제목: `type(scope): 설명` 형식(Conventional Commits)인지, 설명이 "수정"처럼 결과를 알 수 없는 말뿐인지.
+  기본은 아직 어느 원격에도 올리지 않은 커밋을, `--commits 범위`를 주면 그 범위(예: CI의 `origin/main..HEAD`)를 봅니다.
+  병합 커밋과 git이 만든 되돌리기 커밋(`Revert "..."`)은 건너뜁니다.
 
 표준 라이브러리만 씁니다. 이 파일과 check_doc_links.py를 같은 폴더(보통 scripts/)에 둡니다.
 
-실행:  python3 -I scripts/repo_checks.py [--exclude 폴더 ...] [--docs-exclude 폴더 ...]
+실행:  python3 -I scripts/repo_checks.py [--exclude 폴더 ...] [--docs-exclude 폴더 ...] [--commits 범위]
 문제가 있으면 종료 코드 1로 끝납니다.
 """
 from __future__ import annotations
@@ -53,6 +56,13 @@ HOOK_CONFIG_FILES = (".claude/settings.json", ".codex/hooks.json")
 HOOK_SCRIPT = re.compile(r"[\w.-]+(?:/[\w.-]+)*\.py\b")
 # Claude Code가 AGENTS.md를 가져오는 줄로 인정하는 형태
 CLAUDE_IMPORT_LINES = ("@AGENTS.md", "@./AGENTS.md")
+# 공통 규칙 "커밋과 PR 규칙"의 type 목록과 같게 유지합니다.
+COMMIT_TYPES = ("feat", "fix", "docs", "style", "refactor", "test", "chore", "build", "ci")
+COMMIT_TITLE = re.compile(rf"^(?:{'|'.join(COMMIT_TYPES)})(?:\([^()\s]+\))?!?: (?P<description>\S.*)$")
+GIT_REVERT_TITLE = re.compile(r'^Revert ".*"$')
+# 공통 규칙이 결과를 알 수 없다고 든 설명
+VAGUE_DESCRIPTIONS = frozenset({"수정", "개선", "작업 완료"})
+UNPUSHED = ("HEAD", "--not", "--remotes")
 TEXT_SUFFIXES = {
     ".md", ".py", ".js", ".ts", ".tsx", ".jsx", ".java", ".kt", ".go", ".dart", ".rs", ".sh",
     ".yml", ".yaml", ".json", ".toml", ".gradle", ".txt", ".html", ".css", ".xml", ".ps1",
@@ -282,7 +292,42 @@ def check_hook_scripts(root: Path, files: list[str]) -> list[str]:
     return errors
 
 
-def run_all(root: Path, excludes: list[str], docs_excludes: list[str] | None = None) -> list[str]:
+def commit_title_problem(title: str) -> str | None:
+    if GIT_REVERT_TITLE.match(title):
+        return None
+    match = COMMIT_TITLE.match(title)
+    if not match:
+        return f"`type(scope): 설명` 형식이 아닙니다 (type: {', '.join(COMMIT_TYPES)})"
+    if match.group("description").strip() in VAGUE_DESCRIPTIONS:
+        return "설명만으로 무엇이 어떻게 바뀌었는지 알 수 없습니다"
+    return None
+
+
+def check_commit_titles(root: Path, commit_range: str | None = None) -> list[str]:
+    """범위가 없으면 아직 어느 원격에도 올리지 않은 커밋만 봅니다(커밋이 없거나 git이 없으면 할 일 없음)."""
+    revisions = [commit_range] if commit_range else list(UNPUSHED)
+    try:
+        result = subprocess.run(
+            ["git", "log", "--no-merges", "--format=%h%x00%s", *revisions, "--"],
+            cwd=root, capture_output=True, text=True, encoding="utf-8",
+        )
+    except OSError:
+        return []
+    if result.returncode != 0:
+        # 직접 준 범위를 읽지 못하면 검사를 못 한 것이므로 알립니다. 기본 범위는 커밋이 없는 새 저장소에서 실패함
+        return [f"커밋 범위 {commit_range}를 읽지 못했습니다: {result.stderr.strip()}"] if commit_range else []
+    errors = []
+    for line in result.stdout.splitlines():
+        sha, _, title = line.partition("\0")
+        problem = commit_title_problem(title)
+        if problem:
+            errors.append(f"커밋 {sha} 제목: {problem} (공통 규칙: 커밋과 PR. 올리기 전이면 git commit --amend로 고침): {title}")
+    return errors
+
+
+def run_all(
+    root: Path, excludes: list[str], docs_excludes: list[str] | None = None, commit_range: str | None = None
+) -> list[str]:
     files = [f for f in list_files(root) if not excluded(f, excludes)]
     docs_excludes = excludes + (docs_excludes or [])
     return [
@@ -298,6 +343,7 @@ def run_all(root: Path, excludes: list[str], docs_excludes: list[str] | None = N
         *check_skill_mirror(root, files),
         *check_hook_scripts(root, files),
         *check_git_brace_patterns(root, files),
+        *check_commit_titles(root, commit_range),
     ]
 
 
@@ -306,10 +352,13 @@ def main() -> int:
     parser.add_argument("--root", default=".", help="저장소 루트 (기본: 현재 폴더)")
     parser.add_argument("--exclude", nargs="*", default=[], help="모든 검사에서 뺄 폴더")
     parser.add_argument("--docs-exclude", nargs="*", default=[], help="문서 링크 검사에서만 뺄 폴더 (자리표시 링크가 많은 템플릿 등)")
+    parser.add_argument(
+        "--commits", default="", help="제목을 검사할 커밋 범위 (예: origin/main..HEAD). 비우면 아직 올리지 않은 커밋"
+    )
     args = parser.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
 
-    errors = run_all(Path(args.root).resolve(), args.exclude, args.docs_exclude)
+    errors = run_all(Path(args.root).resolve(), args.exclude, args.docs_exclude, args.commits or None)
     for e in errors:
         print(e)
     print(f"저장소 검사: 문제 {len(errors)}개")
