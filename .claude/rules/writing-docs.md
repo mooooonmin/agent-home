@@ -5,11 +5,11 @@ paths:
 
 # 문서 작성 규칙
 
-claude-home 공통 규칙의 일부로, 문서를 쓰거나 고칠 때 읽습니다. 담당 문서 원칙과 "문서를 검토해야 작업이 끝난다"는 `AGENTS.md`의 "문서 관리 규칙"에 있습니다. 고치려면 claude-home에서 고친 뒤 `scripts/sync_rules.py`로 반영합니다.
+agent-home 공통 규칙의 일부로, 문서를 쓰거나 고칠 때 읽습니다. 담당 문서 원칙과 "문서를 검토해야 작업이 끝난다"는 `AGENTS.md`의 "문서 관리 규칙"에 있습니다. 고치려면 agent-home에서 고친 뒤 `scripts/sync_rules.py`로 반영합니다.
 
 ## 폴더마다 짧은 README
 
-역할이 분명한 최상위 폴더(예: `scripts/`, `tools/`, 계층·모듈 폴더)에는 짧은 `README.md`를 둡니다. 폴더에 들어온 사람이나 AI가 바로 맥락을 잡게 하기 위함입니다. 템플릿: claude-home의 `templates/docs/folder-README.md`
+역할이 분명한 최상위 폴더(예: `scripts/`, `tools/`, 계층·모듈 폴더)에는 짧은 `README.md`를 둡니다. 폴더에 들어온 사람이나 AI가 바로 맥락을 잡게 하기 위함입니다. 템플릿: agent-home의 `templates/docs/folder-README.md`
 
 - 이 폴더의 **책임** (한두 문장)
 - 파일이나 하위 폴더별 용도 (표)
@@ -20,11 +20,11 @@ claude-home 공통 규칙의 일부로, 문서를 쓰거나 고칠 때 읽습니
 
 ## 문서 구성
 
-새 프로젝트는 다음 구성으로 시작합니다. claude-home의 `new-project` 스킬(`scripts/new_project.py`)이 이 구성을 만들어 줍니다. 템플릿은 claude-home의 `templates/docs/`에 있습니다.
+새 프로젝트는 다음 구성으로 시작합니다. agent-home의 `new-project` 스킬(`scripts/new_project.py`)이 이 구성을 만들어 줍니다. 템플릿은 agent-home의 `templates/docs/`에 있습니다.
 
 - `README.md`: 무엇인지, 시작하기(설치·실행·테스트 명령), 구조, 문서 링크
-- `AGENTS.md`: 저장소 안내(작업별로 먼저 읽을 문서, 빌드·테스트 명령, 이 저장소만의 규칙, 확인된 사실)와 그 아래 공통 규칙. Codex가 직접 읽습니다. 확인된 사실(파일 사이 대응, 단위, 예외 값)은 찾는 방법이 아니라 사실 그대로 "이 저장소에서는 ..."으로 쓰고 근거(코드 경로, 테스트, 커밋)를 붙입니다. 추측은 적지 않습니다. 템플릿: claude-home의 `templates/AGENTS.project.md`
-- `CLAUDE.md`: `@AGENTS.md` 한 줄과 Claude Code 전용 지시. 템플릿: claude-home의 `templates/CLAUDE.project.md`
+- `AGENTS.md`: 저장소 안내(작업별로 먼저 읽을 문서, 빌드·테스트 명령, 이 저장소만의 규칙, 확인된 사실)와 그 아래 공통 규칙. Codex가 직접 읽습니다. 확인된 사실(파일 사이 대응, 단위, 예외 값)은 찾는 방법이 아니라 사실 그대로 "이 저장소에서는 ..."으로 쓰고 근거(코드 경로, 테스트, 커밋)를 붙입니다. 추측은 적지 않습니다. 템플릿: agent-home의 `templates/AGENTS.project.md`
+- `CLAUDE.md`: `@AGENTS.md` 한 줄과 Claude Code 전용 지시. 템플릿: agent-home의 `templates/CLAUDE.project.md`
 - `docs/adr/NNNN-제목.md`: 설계 결정 기록. 번호는 이어서 붙이고, 결정이 바뀌면 지우지 말고 새 ADR을 만든 뒤 예전 ADR의 상태를 "대체됨"으로 바꿉니다.
 - `CHANGELOG.md`: [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/) 형식
 - `docs/exec-plans/` (여러 세션에 걸친 작업이 있을 때만): 실행 계획과 개선 목록

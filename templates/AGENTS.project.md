@@ -1,7 +1,7 @@
 <!--
   각 프로젝트 저장소 루트에 AGENTS.md로 복사해 쓰는 템플릿입니다(scripts/new_project.py가 채워 줍니다).
   Codex는 이 파일을 직접 읽고, Claude Code는 CLAUDE.md의 @AGENTS.md 줄로 읽습니다.
-  위쪽에는 이 저장소만의 안내를 적고, 맨 아래 공통 규칙 부분은 claude-home의 scripts/sync_rules.py가 채웁니다.
+  위쪽에는 이 저장소만의 안내를 적고, 맨 아래 공통 규칙 부분은 agent-home의 scripts/sync_rules.py가 채웁니다.
   공통 규칙이 약 125줄이라 저장소 안내는 70줄 안쪽으로 씁니다. repo_checks.py가 AGENTS.md 200줄(Claude Code 권장)과
   32KiB(Codex 기본 한도)를 넘으면 알립니다. 자세한 내용은 담당 문서에 두고 여기에는 링크만 둡니다.
 -->
@@ -47,5 +47,5 @@
 - <공통 규칙과 다른 점, 주의할 점. 확인된 사실은 "이 저장소에서는 ..."으로 쓰고 근거를 붙임>
 - 번역 저장소라면: 번역 원칙과 용어는 [TRANSLATION.md](TRANSLATION.md)를 따릅니다.
 
-<!-- claude-home:common-rules:start -->
-<!-- claude-home:common-rules:end -->
+<!-- agent-home:common-rules:start -->
+<!-- agent-home:common-rules:end -->

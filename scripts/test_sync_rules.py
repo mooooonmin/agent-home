@@ -1,4 +1,4 @@
-"""sync_rules.py 테스트. 저장소 내용 대신 임시 폴더에 만든 가짜 claude-home을 원본으로 씁니다.
+"""sync_rules.py 테스트. 저장소 내용 대신 임시 폴더에 만든 가짜 agent-home을 원본으로 씁니다.
 
 실행:  python -I -m unittest discover -s scripts -p "test_*.py"
 """
@@ -21,7 +21,7 @@ sys.modules["sync_rules"] = sync_rules  # dataclass가 모듈을 찾을 수 있�
 spec.loader.exec_module(sync_rules)
 
 BLOCK = f"{sync_rules.BLOCK_START}\n## 공통 규칙\n\n- 규칙 하나\n{sync_rules.BLOCK_END}"
-LEGACY_TEXT = "# 기본 규칙\n\n- claude-home에서 복사한 그대로\n"
+LEGACY_TEXT = "# 기본 규칙\n\n- agent-home에서 복사한 그대로\n"
 
 
 def write(path: Path, text: str) -> None:
@@ -30,15 +30,15 @@ def write(path: Path, text: str) -> None:
 
 
 class Workspace:
-    """가짜 claude-home(source)과 대상 폴더(target), 가짜 홈(home)."""
+    """가짜 agent-home(source)과 대상 폴더(target), 가짜 홈(home)."""
 
     def __enter__(self):
         self._dir = tempfile.TemporaryDirectory()
         base = Path(self._dir.name)
-        self.source, self.target, self.home = base / "claude-home", base / "my-app", base / "home"
+        self.source, self.target, self.home = base / "agent-home", base / "my-app", base / "home"
         self.target.mkdir()
         self.home.mkdir()
-        write(self.source / "AGENTS.md", f"# claude-home\n\n안내\n\n{BLOCK}\n")
+        write(self.source / "AGENTS.md", f"# agent-home\n\n안내\n\n{BLOCK}\n")
         write(self.source / ".claude/rules/lang/python.md", "# Python 규칙\n")
         write(self.source / ".claude/rules/lang/go.md", "# Go 규칙\n")
         write(self.source / ".claude/rules/translation.md", "# 번역 규칙\n")
@@ -95,6 +95,14 @@ class MergeBlockTest(unittest.TestCase):
     def test_원본에_표시가_없으면_실패한다(self):
         with self.assertRaises(ValueError):
             sync_rules.extract_block("# 표시 없음\n")
+
+    def test_claude_home_시절_표시는_새_표시로_바꾼다(self):
+        old = f"# 내 Codex 설정\n\n{sync_rules.OLD_BLOCK_START}\n옛 규칙\n{sync_rules.OLD_BLOCK_END}\n"
+        merged = sync_rules.merge_block(old, BLOCK)
+        self.assertIn("# 내 Codex 설정", merged)
+        self.assertIn(sync_rules.BLOCK_START, merged)
+        self.assertNotIn(sync_rules.OLD_BLOCK_START, merged)
+        self.assertNotIn("옛 규칙", merged)
 
 
 class ProjectTest(unittest.TestCase):
@@ -191,6 +199,23 @@ class ProjectTest(unittest.TestCase):
             plan = sync_rules.plan_project(ws.source, ws.target, set())
             self.assertEqual(plan.changes, [])
 
+    def test_claude_home_시절_버전_파일은_새_이름으로_옮긴다(self):
+        with Workspace() as ws:
+            sync_rules.apply(sync_rules.plan_project(ws.source, ws.target, set()))
+            (ws.target / sync_rules.VERSION_FILE).unlink()
+            write(ws.target / sync_rules.OLD_VERSION_FILE, f"{sync_rules.VERSION_HEADER} claude-home 시점입니다.\ncommit: abc\n")
+            plan = sync_rules.plan_project(ws.source, ws.target, set())
+            self.assertEqual(deleted(plan, ws.target), [sync_rules.OLD_VERSION_FILE])
+            self.assertIn(sync_rules.VERSION_FILE, changed(plan, ws.target))
+
+    def test_내용이_다른_예전_이름_파일은_지우지_않고_알린다(self):
+        with Workspace() as ws:
+            write(ws.target / sync_rules.OLD_VERSION_FILE, "내가 적은 메모\n")
+            plan = sync_rules.plan_project(ws.source, ws.target, set())
+            self.assertNotIn(sync_rules.OLD_VERSION_FILE, deleted(plan, ws.target))
+            self.assertEqual(len(plan.warnings), 1)
+            self.assertIn(sync_rules.OLD_VERSION_FILE, plan.warnings[0])
+
     def test_원본이_git_저장소가_아니면_알_수_없음으로_적는다(self):
         with Workspace() as ws:
             sync_rules.apply(sync_rules.plan_project(ws.source, ws.target, set()))
@@ -230,12 +255,22 @@ class UserTest(unittest.TestCase):
             codex = (ws.home / ".codex/AGENTS.md").read_text(encoding="utf-8")
             self.assertIn("# 내 지시", codex)
             self.assertIn("규칙 하나", codex)
-            self.assertTrue((ws.home / ".claude/rules/claude-home.md").is_file())
+            self.assertTrue((ws.home / ".claude/rules" / sync_rules.USER_RULES_FILE).is_file())
             self.assertTrue((ws.home / ".claude/rules/lang/python.md").is_file())
             self.assertTrue((ws.home / ".agents/skills/research/SKILL.md").is_file())
             self.assertTrue((ws.home / ".claude/skills/research/SKILL.md").is_file())
             self.assertFalse((ws.home / ".claude/rules/coding.md").exists())
             self.assertFalse((ws.home / ".claude/commands/research.md").exists())
+
+    def test_claude_home_시절_사용자_규칙_파일은_지운다(self):
+        with Workspace() as ws:
+            old = ws.home / ".claude/rules" / sync_rules.OLD_USER_RULES_FILE
+            write(old, f"{sync_rules.OLD_BLOCK_START}\n옛 규칙\n{sync_rules.OLD_BLOCK_END}\n")
+            plan = sync_rules.plan_user(ws.source, ws.home)
+            sync_rules.apply(plan)
+            self.assertFalse(old.exists())
+            self.assertTrue((ws.home / ".claude/rules" / sync_rules.USER_RULES_FILE).is_file())
+            self.assertEqual(plan.warnings, [])
 
     def test_이름만_같은_내_파일은_지우지_않는다(self):
         with Workspace() as ws:
