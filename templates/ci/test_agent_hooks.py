@@ -6,6 +6,7 @@ import contextlib
 import importlib.util
 import io
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -31,7 +32,7 @@ def reason(command: str, state: hooks.RepoState) -> str | None:
 class GitCallsTest(unittest.TestCase):
     def test_이어진_명령과_환경_변수와_C_옵션을_읽는다(self):
         calls = hooks.git_calls("cd app && GIT_TRACE=0 git -C sub commit -m '메시지' ; ls | git push origin x")
-        self.assertEqual([(c.directory, c.subcommand) for c in calls], [("app/sub", "commit"), ("app", "push")])
+        self.assertEqual([(c.directory, c.subcommand) for c in calls], [(os.path.join("app", "sub"), "commit"), ("app", "push")])
 
     def test_heredoc_본문의_명령은_무시한다(self):
         command = "git commit -F - <<'EOF'\n제목\n\ngit push origin main 은 하지 않음\nEOF"
@@ -51,7 +52,7 @@ class GitCallsTest(unittest.TestCase):
 
     def test_cd와_여러_C_옵션을_따라간다(self):
         calls = hooks.git_calls("cd ../other && git -C repos -C app commit -m x")
-        self.assertEqual(calls[0].directory, "../other/repos/app")
+        self.assertEqual(calls[0].directory, os.path.join("../other", "repos", "app"))
 
     def test_sh_c와_명령_치환_안의_git도_읽는다(self):
         for command in ('bash -c "git status && git push origin main"', "echo $(git push origin main)"):

@@ -285,8 +285,10 @@ def stop(payload: dict, check: list[str]) -> int:
     root = Path(root_text)
     if not (root / check[0]).is_file() or not has_unfinished_work(root):
         return EXIT_ALLOW  # 검사 도구가 없거나, 바뀐 것도 올리지 않은 커밋도 없으면 검사하지 않음
+    # -X utf8: Windows에서도 검사 출력을 UTF-8로 받습니다. 없으면 cp949로 나와 읽다가 오류가 나고 이유가 사라짐.
     result = subprocess.run(
-        [sys.executable, "-I", *check], cwd=root, capture_output=True, text=True, encoding="utf-8", check=False
+        [sys.executable, "-I", "-X", "utf8", *check],
+        cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace", check=False,
     )
     if result.returncode == 0:
         return EXIT_ALLOW

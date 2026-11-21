@@ -19,6 +19,12 @@ agent-home(예전 이름 claude-home)의 주요 변경 사항을 기록합니다
 - GitHub Actions를 Node 24로 도는 주 버전으로 올림: `checkout@v7`, `setup-go@v7`, `setup-java@v6`, `setup-python@v7`, `setup-node@v7`, `golangci-lint-action@v9`. GitHub이 Node 20 실행을 지원 종료함 (`flutter-action@v2`는 composite라 그대로)
 - 공통 규칙의 커밋 절을 48줄에서 15줄로 줄임. 새 프로젝트 `AGENTS.md`가 198~200줄에서 165~167줄로 줄어듦 ([ADR 0006](docs/adr/0006-check-commit-titles-instead-of-long-commit-rules.md))
 
+### 수정
+
+- 끝내기 전 훅: Windows에서 검사 스크립트가 cp949로 출력하면 읽다가 오류가 나 실패 이유가 `None`으로 보이던 문제. 검사를 `-X utf8`로 돌림
+- `test_agent_hooks.py`: 경로 구분자를 `/`로 가정해 Windows에서 실패하던 테스트 2개
+- CI에 Windows 작업을 더해 검사·동기화 도구 테스트를 Windows에서도 돌림
+
 ## 2026-11-05
 
 ### 추가
