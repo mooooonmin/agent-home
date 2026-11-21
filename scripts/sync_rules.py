@@ -112,9 +112,24 @@ def _find_marked(text: str, start_mark: str, end_mark: str) -> tuple[int, int] |
 
 def find_block(text: str) -> tuple[int, int] | None:
     """공통 규칙 부분의 (시작, 끝) 위치. 새 표시가 없으면 claude-home 시절 표시를 찾습니다.
-    표시가 둘 다 없으면 None, 한쪽만 있거나 순서가 틀리면 오류입니다."""
+    표시가 둘 다 없으면 None, 한쪽만 있거나 순서가 틀리거나 새 표시와 예전 표시가 함께 있으면 오류입니다."""
     span = _find_marked(text, BLOCK_START, BLOCK_END)
-    return span if span is not None else _find_marked(text, OLD_BLOCK_START, OLD_BLOCK_END)
+    old_span = _find_marked(text, OLD_BLOCK_START, OLD_BLOCK_END)
+    if span is not None and old_span is not None:
+        raise ValueError(f"공통 규칙이 새 표시({BLOCK_START})와 예전 표시({OLD_BLOCK_START})로 두 번 들어 있습니다. 예전 부분을 지운 뒤 다시 돌리세요")
+    return span if span is not None else old_span
+
+
+def is_generated_block(text: str) -> bool:
+    """예전 사용자 규칙 파일이 스크립트가 쓴 모양(예전 표시로 감싼 공통 규칙만 있음)인지."""
+    body = text.strip()
+    return body.startswith(OLD_BLOCK_START) and body.endswith(OLD_BLOCK_END) and body.count(OLD_BLOCK_START) == 1
+
+
+def is_generated_version(text: str) -> bool:
+    """예전 버전 파일이 스크립트가 쓴 모양(머리말 두 줄과 commit 줄)인지."""
+    lines = text.strip().splitlines()
+    return len(lines) == 3 and lines[0].startswith(VERSION_HEADER) and lines[1].startswith("# ") and lines[2].startswith("commit: ")
 
 
 def extract_block(text: str) -> str:
@@ -215,11 +230,11 @@ class Planner:
         else:
             self.warn(f"{path}: 예전 사본과 내용이 달라 지우지 않았습니다. 필요한 내용을 {moved_to}로 옮긴 뒤 직접 지우세요")
 
-    def delete_renamed(self, path: Path, generated_prefix: str, renamed_to: str) -> None:
-        """이름이 바뀐 생성 파일을 지웁니다. 스크립트가 쓴 모양(generated_prefix로 시작)이 아니면 알리기만 합니다."""
+    def delete_renamed(self, path: Path, is_generated, renamed_to: str) -> None:
+        """이름이 바뀐 생성 파일을 지웁니다. 스크립트가 쓴 모양(is_generated가 참)이 아니면 알리기만 합니다."""
         if not path.is_file():
             return
-        if read_text(path).startswith(generated_prefix):
+        if is_generated(read_text(path)):
             self._add(path, None, f"지움 ({renamed_to}로 이름이 바뀜)")
         else:
             self.warn(f"{path}: 예전 이름의 파일인데 내용이 달라 지우지 않았습니다. 필요한 내용을 {renamed_to}로 옮긴 뒤 직접 지우세요")
@@ -284,7 +299,7 @@ def plan_project(source: Path, target: Path, rule_sets: set[str]) -> Plan:
 
     for name in LEGACY_RULE_FILES:
         planner.delete_legacy(rules / name, "AGENTS.md 위쪽 저장소 안내")
-    planner.delete_renamed(target / OLD_VERSION_FILE, VERSION_HEADER, VERSION_FILE)
+    planner.delete_renamed(target / OLD_VERSION_FILE, is_generated_version, VERSION_FILE)
     # 실제로 바뀌는 파일이 있을 때만 시점을 새로 적습니다. 상관없는 agent-home 커밋 때문에 매번 바뀌지 않게 합니다.
     version_file = target / VERSION_FILE
     if planner.plan.changes or not version_file.is_file():
@@ -310,7 +325,7 @@ def plan_user(source: Path, home: Path) -> Plan:
 
     for name in LEGACY_RULE_FILES:
         planner.delete_legacy(claude_dir / "rules" / name, USER_RULES_FILE)
-    planner.delete_renamed(claude_dir / "rules" / OLD_USER_RULES_FILE, OLD_BLOCK_START, USER_RULES_FILE)
+    planner.delete_renamed(claude_dir / "rules" / OLD_USER_RULES_FILE, is_generated_block, USER_RULES_FILE)
     return planner.plan
 
 

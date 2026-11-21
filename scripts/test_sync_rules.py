@@ -104,6 +104,12 @@ class MergeBlockTest(unittest.TestCase):
         self.assertNotIn(sync_rules.OLD_BLOCK_START, merged)
         self.assertNotIn("옛 규칙", merged)
 
+    def test_새_표시와_예전_표시가_함께_있으면_멈춘다(self):
+        both = (f"{sync_rules.BLOCK_START}\n새 규칙\n{sync_rules.BLOCK_END}\n\n"
+                f"{sync_rules.OLD_BLOCK_START}\n옛 규칙\n{sync_rules.OLD_BLOCK_END}\n")
+        with self.assertRaises(ValueError):
+            sync_rules.merge_block(both, BLOCK)
+
 
 class ProjectTest(unittest.TestCase):
     def test_빈_프로젝트에_규칙_스킬_검사도구를_넣는다(self):
@@ -203,7 +209,8 @@ class ProjectTest(unittest.TestCase):
         with Workspace() as ws:
             sync_rules.apply(sync_rules.plan_project(ws.source, ws.target, set()))
             (ws.target / sync_rules.VERSION_FILE).unlink()
-            write(ws.target / sync_rules.OLD_VERSION_FILE, f"{sync_rules.VERSION_HEADER} claude-home 시점입니다.\ncommit: abc\n")
+            write(ws.target / sync_rules.OLD_VERSION_FILE,
+                  f"{sync_rules.VERSION_HEADER} claude-home 시점입니다.\n# 그 뒤 바뀐 내용은 …\ncommit: abc 2026-11-05\n")
             plan = sync_rules.plan_project(ws.source, ws.target, set())
             self.assertEqual(deleted(plan, ws.target), [sync_rules.OLD_VERSION_FILE])
             self.assertIn(sync_rules.VERSION_FILE, changed(plan, ws.target))
@@ -271,6 +278,16 @@ class UserTest(unittest.TestCase):
             self.assertFalse(old.exists())
             self.assertTrue((ws.home / ".claude/rules" / sync_rules.USER_RULES_FILE).is_file())
             self.assertEqual(plan.warnings, [])
+
+    def test_고친_흔적이_있는_예전_사용자_규칙_파일은_지우지_않고_알린다(self):
+        with Workspace() as ws:
+            old = ws.home / ".claude/rules" / sync_rules.OLD_USER_RULES_FILE
+            write(old, f"{sync_rules.OLD_BLOCK_START}\n옛 규칙\n{sync_rules.OLD_BLOCK_END}\n\n- 내가 덧붙인 메모\n")
+            plan = sync_rules.plan_user(ws.source, ws.home)
+            sync_rules.apply(plan)
+            self.assertTrue(old.exists())
+            self.assertEqual(len(plan.warnings), 1)
+            self.assertIn(sync_rules.OLD_USER_RULES_FILE, plan.warnings[0])
 
     def test_이름만_같은_내_파일은_지우지_않는다(self):
         with Workspace() as ws:
