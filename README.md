@@ -13,7 +13,7 @@ Claude Code, Codex 같은 AI 코딩 에이전트가 함께 쓰는 공통 규칙�
 agent-home/
 ├─ AGENTS.md                     # 이 저장소 안내 + 공통 규칙(소통·작업 방식, 코딩, 문서, 커밋과 PR)의 원본
 ├─ CLAUDE.md                     # @AGENTS.md (Claude Code가 AGENTS.md를 읽게 함)
-├─ .agents/skills/               # 스킬 원본: new-project, research, update-docs, translate-chapter, review-translation (Codex)
+├─ .agents/skills/               # 스킬 원본: new-project, research, update-docs, translate-chapter, review-translation, archive-issue (Codex)
 ├─ .github/                      # 이 저장소 CI, PR 템플릿(새 프로젝트에도 복사)
 ├─ .codex/hooks.json             # 훅 (Codex). 두 도구 모두 templates/ci/agent_hooks.py를 부름
 ├─ .claude/
