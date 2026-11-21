@@ -14,6 +14,7 @@ agent-home(예전 이름 claude-home)의 주요 변경 사항을 기록합니다
 
 - 저장소 이름을 claude-home에서 agent-home으로 바꿈. 공통 규칙 표시는 `agent-home:common-rules`, 버전 파일은 `.agent-home-version`, 사용자 규칙 파일은 `~/.claude/rules/agent-home.md` ([ADR 0007](docs/adr/0007-rename-to-agent-home.md))
 - `sync_rules.py`: 예전 표시(`claude-home:common-rules`)를 새 표시로 바꾸고, 예전 이름의 버전 파일·사용자 규칙 파일은 스크립트가 쓴 모양 그대로일 때만 지움
+- 공통 규칙: 클라우드 세션에만 적혀 있던 "PR은 내가 직접 확인하고 병합"을 모든 세션으로 넓혀, 모든 변경을 PR로 남기게 함
 - GitHub Actions를 Node 24로 도는 주 버전으로 올림: `checkout@v7`, `setup-go@v7`, `setup-java@v6`, `setup-python@v7`, `setup-node@v7`, `golangci-lint-action@v9`. GitHub이 Node 20 실행을 지원 종료함 (`flutter-action@v2`는 composite라 그대로)
 - 공통 규칙의 커밋 절을 48줄에서 15줄로 줄임. 새 프로젝트 `AGENTS.md`가 198~200줄에서 165~167줄로 줄어듦 ([ADR 0006](docs/adr/0006-check-commit-titles-instead-of-long-commit-rules.md))
 
