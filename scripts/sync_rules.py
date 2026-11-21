@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""claude-home의 공통 규칙·스킬·검사 도구를 프로젝트나 사용자 설정으로 복사합니다.
+"""agent-home의 공통 규칙·스킬·검사 도구를 프로젝트나 사용자 설정으로 복사합니다.
 
 기본은 미리보기입니다. 무엇을 바꿀지만 보여 주고, --apply를 붙여야 실제로 씁니다.
 
@@ -7,16 +7,18 @@
   사용자:    python -I scripts/sync_rules.py --user [--apply]
   스킬 사본: python -I scripts/sync_rules.py --mirror [--apply]
 
-- 공통 규칙은 claude-home `AGENTS.md`의 common-rules 표시 사이 부분입니다. 대상 `AGENTS.md`에서는
+- 공통 규칙은 agent-home `AGENTS.md`의 common-rules 표시 사이 부분입니다. 대상 `AGENTS.md`에서는
   같은 표시 사이만 바꾸고, 표시가 둘 다 없으면 맨 아래에 붙입니다. 표시가 한쪽만 있으면 멈춥니다.
 - 코드·문서 작성 규칙(`.claude/rules/code.md`, `writing-docs.md`)은 모든 프로젝트에, 언어·번역 규칙은 고른 것만 넣습니다.
 - 훅 설정(`.claude/settings.json`, `.codex/hooks.json`)은 없을 때만 템플릿으로 만듭니다. 이미 있으면 덮어쓰지 않고,
   훅(agent_hooks.py)이 빠져 있으면 알립니다.
-- 프로젝트에는 반영한 claude-home 커밋을 `.claude-home-version`에 적어, 나중에 그 사이 바뀐 내용을 찾을 수 있게 합니다.
+- 프로젝트에는 반영한 agent-home 커밋을 `.agent-home-version`에 적어, 나중에 그 사이 바뀐 내용을 찾을 수 있게 합니다.
 - 스킬 원본은 `.agents/skills/`(Codex)이고, 같은 내용을 `.claude/skills/`(Claude Code)에도 둡니다.
   원본에서 없어진 스킬 파일은 사본에서도 지웁니다.
 - 공통 규칙이 AGENTS.md로 옮겨지기 전의 사본(`.claude/rules/basics.md` 등, `.claude/commands/`)은
-  claude-home에 있던 내용 그대로일 때만 지웁니다. 고친 흔적이 있으면 지우지 않고 알립니다.
+  agent-home에 있던 내용 그대로일 때만 지웁니다. 고친 흔적이 있으면 지우지 않고 알립니다.
+- 저장소 이름이 claude-home이던 때의 표시(`claude-home:common-rules`)는 새 표시로 바꾸고,
+  그때 만든 `claude-home.md`, `.claude-home-version`은 스크립트가 쓴 모양 그대로일 때만 지웁니다.
 
 표준 라이브러리만 씁니다.
 """
@@ -31,8 +33,14 @@ from dataclasses import dataclass
 from pathlib import Path
 
 SOURCE_ROOT = Path(__file__).resolve().parent.parent
-BLOCK_START = "<!-- claude-home:common-rules:start -->"
-BLOCK_END = "<!-- claude-home:common-rules:end -->"
+BLOCK_START = "<!-- agent-home:common-rules:start -->"
+BLOCK_END = "<!-- agent-home:common-rules:end -->"
+# 저장소 이름이 claude-home이던 때의 표시와 파일 이름. 남아 있으면 새 이름으로 옮깁니다.
+OLD_BLOCK_START = "<!-- claude-home:common-rules:start -->"
+OLD_BLOCK_END = "<!-- claude-home:common-rules:end -->"
+OLD_USER_RULES_FILE = "claude-home.md"
+OLD_VERSION_FILE = ".claude-home-version"
+VERSION_HEADER = "# 이 프로젝트의 공통 규칙·스킬·검사·훅을 반영한"
 LANGUAGES = ("java", "python", "typescript", "dart", "go")
 TRANSLATION = "translation"
 # 코드·문서를 다룰 때만 읽히는 공통 규칙. 언어와 상관없이 모든 프로젝트에 넣습니다.
@@ -40,18 +48,18 @@ COMMON_RULE_FILES = ("code.md", "writing-docs.md")
 PROJECT_SKILLS = ("update-docs",)
 TRANSLATION_SKILLS = ("translate-chapter", "review-translation")
 CHECK_SCRIPTS = ("repo_checks.py", "check_doc_links.py", "test_checks.py", "agent_hooks.py", "test_agent_hooks.py")
-# 프로젝트 안의 경로 → claude-home의 템플릿. 프로젝트마다 손볼 수 있는 설정이라 없을 때만 만듭니다.
+# 프로젝트 안의 경로 → agent-home의 템플릿. 프로젝트마다 손볼 수 있는 설정이라 없을 때만 만듭니다.
 AGENT_SETTINGS = (
     (".claude/settings.json", "templates/agent-settings/claude-settings.json"),
     (".codex/hooks.json", "templates/agent-settings/codex-hooks.json"),
 )
 HOOK_SCRIPT_NAME = "agent_hooks.py"
-USER_RULES_FILE = "claude-home.md"
-VERSION_FILE = ".claude-home-version"
+USER_RULES_FILE = "agent-home.md"
+VERSION_FILE = ".agent-home-version"
 CLAUDE_IMPORT_LINES = ("@AGENTS.md", "@./AGENTS.md")
 # 공통 규칙이 AGENTS.md 하나로 합쳐지기 전에 따로 복사하던 파일
 LEGACY_RULE_FILES = ("basics.md", "coding.md", "docs.md", "git.md")
-# 위 파일과 예전 `.claude/commands/*.md`가 claude-home git 기록에 있던 모든 버전의 SHA-256(줄바꿈은 LF로 맞춤).
+# 위 파일과 예전 `.claude/commands/*.md`가 agent-home git 기록에 있던 모든 버전의 SHA-256(줄바꿈은 LF로 맞춤).
 # 이 목록에 있는 사본만 지워서, 사용자가 고친 파일이나 이름만 같은 다른 파일을 지키기 위함입니다.
 KNOWN_LEGACY_SHA256 = frozenset({
     "04033415ca79620375f5ac11677dcff547639eb4e6aeac7023aea4689bec0b47",
@@ -93,14 +101,35 @@ class Plan:
     unchanged: int = 0
 
 
-def find_block(text: str) -> tuple[int, int] | None:
-    """공통 규칙 부분의 (시작, 끝) 위치. 표시가 둘 다 없으면 None, 한쪽만 있거나 순서가 틀리면 오류입니다."""
-    start, end = text.find(BLOCK_START), text.find(BLOCK_END)
+def _find_marked(text: str, start_mark: str, end_mark: str) -> tuple[int, int] | None:
+    start, end = text.find(start_mark), text.find(end_mark)
     if start < 0 and end < 0:
         return None
-    if start < 0 or end < start or text.count(BLOCK_START) > 1 or text.count(BLOCK_END) > 1:
-        raise ValueError(f"공통 규칙 표시({BLOCK_START} … {BLOCK_END})가 하나씩 순서대로 있지 않습니다. 직접 고친 뒤 다시 돌리세요")
-    return start, end + len(BLOCK_END)
+    if start < 0 or end < start or text.count(start_mark) > 1 or text.count(end_mark) > 1:
+        raise ValueError(f"공통 규칙 표시({start_mark} … {end_mark})가 하나씩 순서대로 있지 않습니다. 직접 고친 뒤 다시 돌리세요")
+    return start, end + len(end_mark)
+
+
+def find_block(text: str) -> tuple[int, int] | None:
+    """공통 규칙 부분의 (시작, 끝) 위치. 새 표시가 없으면 claude-home 시절 표시를 찾습니다.
+    표시가 둘 다 없으면 None, 한쪽만 있거나 순서가 틀리거나 새 표시와 예전 표시가 함께 있으면 오류입니다."""
+    span = _find_marked(text, BLOCK_START, BLOCK_END)
+    old_span = _find_marked(text, OLD_BLOCK_START, OLD_BLOCK_END)
+    if span is not None and old_span is not None:
+        raise ValueError(f"공통 규칙이 새 표시({BLOCK_START})와 예전 표시({OLD_BLOCK_START})로 두 번 들어 있습니다. 예전 부분을 지운 뒤 다시 돌리세요")
+    return span if span is not None else old_span
+
+
+def is_generated_block(text: str) -> bool:
+    """예전 사용자 규칙 파일이 스크립트가 쓴 모양(예전 표시로 감싼 공통 규칙만 있음)인지."""
+    body = text.strip()
+    return body.startswith(OLD_BLOCK_START) and body.endswith(OLD_BLOCK_END) and body.count(OLD_BLOCK_START) == 1
+
+
+def is_generated_version(text: str) -> bool:
+    """예전 버전 파일이 스크립트가 쓴 모양(머리말 두 줄과 commit 줄)인지."""
+    lines = text.strip().splitlines()
+    return len(lines) == 3 and lines[0].startswith(VERSION_HEADER) and lines[1].startswith("# ") and lines[2].startswith("commit: ")
 
 
 def extract_block(text: str) -> str:
@@ -129,7 +158,7 @@ def read_text(path: Path) -> str:
 
 
 def source_version(source: Path) -> str:
-    """원본 claude-home의 마지막 커밋(짧은 해시와 날짜). git 저장소가 아니면 '알 수 없음'."""
+    """원본 agent-home의 마지막 커밋(짧은 해시와 날짜). git 저장소가 아니면 '알 수 없음'."""
     def git(*args: str) -> str | None:
         try:
             result = subprocess.run(["git", *args], cwd=source, capture_output=True, text=True, encoding="utf-8")
@@ -149,8 +178,8 @@ def source_version(source: Path) -> str:
 
 def version_text(source: Path) -> str:
     return (
-        "# 이 프로젝트의 공통 규칙·스킬·검사·훅을 반영한 claude-home 시점입니다. claude-home의 scripts/sync_rules.py가 씁니다.\n"
-        "# 그 뒤 바뀐 내용은 claude-home의 CHANGELOG.md나 `git -C <claude-home> log --oneline <커밋>..main`으로 봅니다.\n"
+        "# 이 프로젝트의 공통 규칙·스킬·검사·훅을 반영한 agent-home 시점입니다. agent-home의 scripts/sync_rules.py가 씁니다.\n"
+        "# 그 뒤 바뀐 내용은 agent-home의 CHANGELOG.md나 `git -C <agent-home> log --oneline <커밋>..main`으로 봅니다.\n"
         f"commit: {source_version(source)}\n"
     )
 
@@ -193,13 +222,22 @@ class Planner:
             self._add(path, None, note)
 
     def delete_legacy(self, path: Path, moved_to: str) -> None:
-        """claude-home에 있던 내용 그대로인 예전 사본만 지웁니다."""
+        """agent-home에 있던 내용 그대로인 예전 사본만 지웁니다."""
         if not path.is_file():
             return
         if is_known_legacy(path):
             self._add(path, None, f"지움 ({moved_to}로 옮겨짐)")
         else:
             self.warn(f"{path}: 예전 사본과 내용이 달라 지우지 않았습니다. 필요한 내용을 {moved_to}로 옮긴 뒤 직접 지우세요")
+
+    def delete_renamed(self, path: Path, is_generated, renamed_to: str) -> None:
+        """이름이 바뀐 생성 파일을 지웁니다. 스크립트가 쓴 모양(is_generated가 참)이 아니면 알리기만 합니다."""
+        if not path.is_file():
+            return
+        if is_generated(read_text(path)):
+            self._add(path, None, f"지움 ({renamed_to}로 이름이 바뀜)")
+        else:
+            self.warn(f"{path}: 예전 이름의 파일인데 내용이 달라 지우지 않았습니다. 필요한 내용을 {renamed_to}로 옮긴 뒤 직접 지우세요")
 
     def warn(self, message: str) -> None:
         self.plan.warnings.append(message)
@@ -257,11 +295,12 @@ def plan_project(source: Path, target: Path, rule_sets: set[str]) -> Plan:
         if not settings.is_file():
             planner.write(settings, (source / template).read_bytes())
         elif HOOK_SCRIPT_NAME not in read_text(settings):
-            planner.warn(f"{settings}: 훅이 없습니다. claude-home의 {template}에서 hooks 부분을 합치세요")
+            planner.warn(f"{settings}: 훅이 없습니다. agent-home의 {template}에서 hooks 부분을 합치세요")
 
     for name in LEGACY_RULE_FILES:
         planner.delete_legacy(rules / name, "AGENTS.md 위쪽 저장소 안내")
-    # 실제로 바뀌는 파일이 있을 때만 시점을 새로 적습니다. 상관없는 claude-home 커밋 때문에 매번 바뀌지 않게 합니다.
+    planner.delete_renamed(target / OLD_VERSION_FILE, is_generated_version, VERSION_FILE)
+    # 실제로 바뀌는 파일이 있을 때만 시점을 새로 적습니다. 상관없는 agent-home 커밋 때문에 매번 바뀌지 않게 합니다.
     version_file = target / VERSION_FILE
     if planner.plan.changes or not version_file.is_file():
         planner.write_text(version_file, version_text(source))
@@ -286,6 +325,7 @@ def plan_user(source: Path, home: Path) -> Plan:
 
     for name in LEGACY_RULE_FILES:
         planner.delete_legacy(claude_dir / "rules" / name, USER_RULES_FILE)
+    planner.delete_renamed(claude_dir / "rules" / OLD_USER_RULES_FILE, is_generated_block, USER_RULES_FILE)
     return planner.plan
 
 
@@ -327,7 +367,7 @@ def report(plan: Plan, base: Path, heading: str) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="claude-home 규칙·스킬 동기화")
+    parser = argparse.ArgumentParser(description="agent-home 규칙·스킬 동기화")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--target", help="규칙을 넣을 프로젝트 폴더")
     mode.add_argument("--user", action="store_true", help="~/.claude, ~/.codex, ~/.agents/skills에 넣기")

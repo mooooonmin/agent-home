@@ -288,7 +288,7 @@ def check_hook_scripts(root: Path, files: list[str]) -> list[str]:
             if not (root / script).is_file():
                 errors.append(
                     f"{rel}: 훅 스크립트 {script}가 없습니다. 이대로면 셸 명령이 막히거나 훅이 돌지 않습니다 "
-                    f"(claude-home의 sync_rules.py로 넣거나 훅 설정을 지움)"
+                    f"(agent-home의 sync_rules.py로 넣거나 훅 설정을 지움)"
                 )
     return errors
 

@@ -1,6 +1,6 @@
-# claude-home
+# agent-home
 
-Claude Code와 Codex가 함께 쓰는 공통 규칙·스킬·용어집·템플릿을 모아 둔 **비공개** 저장소입니다.
+Claude Code, Codex 같은 AI 코딩 에이전트가 함께 쓰는 공통 규칙·스킬·용어집·템플릿을 모아 둔 저장소입니다.
 공통 규칙은 `AGENTS.md` 하나에 있고, Codex는 이 파일을 직접, Claude Code는 `CLAUDE.md`의 `@AGENTS.md` 줄로 읽습니다.
 클라우드 세션을 시작할 때 이 저장소를 고르면 PC에서 쓰던 규칙 그대로 작업을 맡길 수 있습니다.
 
@@ -10,7 +10,7 @@ Claude Code와 Codex가 함께 쓰는 공통 규칙·스킬·용어집·템플�
 ## 구조
 
 ```
-claude-home/
+agent-home/
 ├─ AGENTS.md                     # 이 저장소 안내 + 공통 규칙(소통·작업 방식, 코딩, 문서, 커밋과 PR)의 원본
 ├─ CLAUDE.md                     # @AGENTS.md (Claude Code가 AGENTS.md를 읽게 함)
 ├─ .agents/skills/               # 스킬 원본: new-project, research, update-docs, translate-chapter, review-translation (Codex)
@@ -59,10 +59,10 @@ claude-home/
 
 **로컬 PC에서** 이 저장소를 열고 `new-project` 스킬로 시작합니다. 클라우드 세션은 세션에 넣은 저장소 밖에 새 저장소를 만들지 않아서 쓸 수 없습니다.
 
-먼저 최신 규칙을 받습니다. 스크립트는 GitHub이 아니라 이 PC에 받아 둔 claude-home 폴더의 파일을 복사합니다.
+먼저 최신 규칙을 받습니다. 스크립트는 GitHub이 아니라 이 PC에 받아 둔 agent-home 폴더의 파일을 복사합니다.
 
 ```bash
-git -C C:/00.PROJECT/claude-home pull
+git -C C:/00.PROJECT/agent-home pull
 ```
 
 Claude Code에서는 다음처럼 부릅니다. Codex에서는 `$new-project`로 스킬을 고르고 같은 내용을 적습니다.
@@ -87,13 +87,13 @@ python -I scripts/new_project.py --name my-app --language python --description "
 
 규칙이나 템플릿을 고치면 `scripts/test_new_project.py`가 모든 언어·번역 조합으로 프로젝트를 만들어 저장소 검사가 통과하는지 CI에서 확인합니다.
 
-새 프로젝트의 규칙은 만들 때 복사한 **사본**입니다. 프로젝트에서 고친 규칙은 그 프로젝트에만 적용되고 claude-home은 바뀌지 않습니다. 원본을 고친 뒤 반영하는 법과 주의점은 [초기 설정의 규칙을 고친 뒤](docs/setup.md#규칙을-고친-뒤)를 봅니다.
+새 프로젝트의 규칙은 만들 때 복사한 **사본**입니다. 프로젝트에서 고친 규칙은 그 프로젝트에만 적용되고 agent-home은 바뀌지 않습니다. 원본을 고친 뒤 반영하는 법과 주의점은 [초기 설정의 규칙을 고친 뒤](docs/setup.md#규칙을-고친-뒤)를 봅니다.
 
 ### 기존 프로젝트에 적용하기
 
 클라우드 세션에는 **세션에 넣은 저장소의 파일만** 있고 내 PC의 `~/.claude/`, `~/.codex/`는 따라가지 않습니다. 그래서 프로젝트 저장소에도 규칙이 있어야 합니다.
 
-1. 미리보기로 바뀔 파일을 확인합니다. 공통 규칙은 프로젝트 `AGENTS.md`의 `claude-home:common-rules` 표시 사이에만 들어가고(없으면 맨 아래에 붙음), 코드·문서 작성 규칙(`code.md`, `writing-docs.md`)과 언어 규칙, `update-docs` 스킬, 검사·훅 스크립트가 함께 들어갑니다.
+1. 미리보기로 바뀔 파일을 확인합니다. 공통 규칙은 프로젝트 `AGENTS.md`의 `agent-home:common-rules` 표시 사이에만 들어가고(없으면 맨 아래에 붙음), 코드·문서 작성 규칙(`code.md`, `writing-docs.md`)과 언어 규칙, `update-docs` 스킬, 검사·훅 스크립트가 함께 들어갑니다.
    ```bash
    python -I scripts/sync_rules.py --target ../my-app --lang python
    ```
@@ -106,7 +106,7 @@ python -I scripts/new_project.py --name my-app --language python --description "
 5. 언어에 맞는 `templates/lint/` 설정과 `templates/ci/`의 GitHub Actions를 넣습니다.
 6. Codex를 쓴다면 그 프로젝트에서 훅을 한 번 승인합니다([훅](docs/setup.md#훅)).
 
-이 저장소가 규칙의 **원본**입니다. 규칙을 고칠 땐 여기서 고친 뒤 같은 명령으로 프로젝트에 다시 반영합니다. 반영할 때마다 프로젝트의 `.claude-home-version`에 claude-home 커밋이 적히므로, 그 뒤 바뀐 내용을 [CHANGELOG](CHANGELOG.md)에서 찾을 수 있습니다.
+이 저장소가 규칙의 **원본**입니다. 규칙을 고칠 땐 여기서 고친 뒤 같은 명령으로 프로젝트에 다시 반영합니다. 반영할 때마다 프로젝트의 `.agent-home-version`에 agent-home 커밋이 적히므로, 그 뒤 바뀐 내용을 [CHANGELOG](CHANGELOG.md)에서 찾을 수 있습니다.
 
 ### 로컬 PC에서도 같은 규칙 쓰기
 

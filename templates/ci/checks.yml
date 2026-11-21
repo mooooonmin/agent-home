@@ -1,5 +1,5 @@
 # 프로젝트의 .github/workflows/checks.yml로 복사합니다.
-# 같은 폴더의 검사·훅 스크립트와 테스트는 claude-home의 scripts/sync_rules.py가 scripts/에 넣습니다.
+# 같은 폴더의 검사·훅 스크립트와 테스트는 agent-home의 scripts/sync_rules.py가 scripts/에 넣습니다.
 # 푸시와 PR마다 저장소 규칙(생성물·버전 고정·latest 태그·충돌 표시·셸 문법·문서 링크·커밋 제목)을 검사합니다.
 name: checks
 

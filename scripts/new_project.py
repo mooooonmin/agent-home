@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""claude-home의 규칙·검사·문서 틀을 깐 새 프로젝트 폴더를 만듭니다.
+"""agent-home의 규칙·검사·문서 틀을 깐 새 프로젝트 폴더를 만듭니다.
 
 기본은 미리보기입니다. 만들 파일만 보여 주고, --apply를 붙여야 실제로 만듭니다.
 
   python -I scripts/new_project.py --name my-app --language python --description "할 일 목록 CLI"
   python -I scripts/new_project.py --name my-app --language python --description "할 일 목록 CLI" --apply
 
-- 새 폴더는 --path(기본: claude-home이 있는 폴더) 아래 --name으로 만듭니다. 비어 있지 않은 폴더면 멈춥니다.
+- 새 폴더는 --path(기본: agent-home이 있는 폴더) 아래 --name으로 만듭니다. 비어 있지 않은 폴더면 멈춥니다.
 - 언어별 뼈대(코드, 빌드 파일)는 만들지 않습니다. 각 언어의 공식 도구로 만듭니다(new-project 스킬 참고).
 - 공통 규칙·언어 규칙·스킬·검사·훅 스크립트와 훅 설정은 sync_rules.py와 같은 함수로 넣습니다.
 - --translation을 붙이면 번역 저장소용 규칙·스킬과 TRANSLATION.md도 넣습니다.
@@ -272,11 +272,11 @@ def create(source: Path, request: ProjectRequest, today: str) -> sync_rules.Plan
 
 
 def parse_request(argv: list[str] | None) -> tuple[ProjectRequest, bool]:
-    parser = argparse.ArgumentParser(description="claude-home 기준 새 프로젝트 만들기")
+    parser = argparse.ArgumentParser(description="agent-home 기준 새 프로젝트 만들기")
     parser.add_argument("--name", required=True, help="프로젝트(폴더) 이름: 영문·숫자·.-_")
     parser.add_argument("--language", required=True, choices=sorted(LANGUAGE_SETUPS))
     parser.add_argument("--description", default=DESCRIPTION_PLACEHOLDER, help="이 저장소가 무엇인지 한두 문장")
-    parser.add_argument("--path", help="새 폴더를 만들 상위 폴더 (기본: claude-home이 있는 폴더)")
+    parser.add_argument("--path", help="새 폴더를 만들 상위 폴더 (기본: agent-home이 있는 폴더)")
     parser.add_argument("--translation", action="store_true", help="번역 저장소용 규칙·스킬·TRANSLATION.md도 넣기")
     parser.add_argument("--apply", action="store_true", help="실제로 만듭니다. 없으면 미리보기만 합니다")
     args = parser.parse_args(argv)

@@ -1,6 +1,6 @@
 ---
 name: new-project
-description: claude-home 규칙·검사·문서 틀을 깐 새 프로젝트를 만들고 초기 구축까지 진행
+description: agent-home 규칙·검사·문서 틀을 깐 새 프로젝트를 만들고 초기 구축까지 진행
 argument-hint: <이름> <java|python|typescript|dart|go> [한 줄 설명]
 ---
 
@@ -8,7 +8,7 @@ argument-hint: <이름> <java|python|typescript|dart|go> [한 줄 설명]
 
 `$ARGUMENTS`가 비어 있거나 그대로 보이면(Codex 등) 사용자 메시지에서 찾고, 없으면 묻습니다.
 
-claude-home 기준으로 새 프로젝트를 만들고 체계적으로 시작합니다. **로컬 PC에서만** 씁니다. 클라우드 세션은 세션에 넣은 저장소 밖에 새 저장소를 만들지 않으므로, 클라우드에서 실행했다면 멈추고 그렇게 안내합니다. 단계마다 무엇을 했는지 짧게 알리고, 사용자 확인이 필요한 곳에서는 멈춰서 묻습니다.
+agent-home 기준으로 새 프로젝트를 만들고 체계적으로 시작합니다. **로컬 PC에서만** 씁니다. 클라우드 세션은 세션에 넣은 저장소 밖에 새 저장소를 만들지 않으므로, 클라우드에서 실행했다면 멈추고 그렇게 안내합니다. 단계마다 무엇을 했는지 짧게 알리고, 사용자 확인이 필요한 곳에서는 멈춰서 묻습니다.
 
 ## 1. 정하기
 
@@ -18,21 +18,21 @@ claude-home 기준으로 새 프로젝트를 만들고 체계적으로 시작합
 
 ## 2. 틀 깔기
 
-스크립트(`scripts/new_project.py`, Python 3.11 이상)는 claude-home 저장소 안에 있습니다. 현재 폴더에 없으면 claude-home 위치를 묻고 그 경로의 스크립트를 씁니다(로컬 PC 기준 보통 `C:\00.PROJECT\claude-home`).
+스크립트(`scripts/new_project.py`, Python 3.11 이상)는 agent-home 저장소 안에 있습니다. 현재 폴더에 없으면 agent-home 위치를 묻고 그 경로의 스크립트를 씁니다(로컬 PC 기준 보통 `C:\00.PROJECT\agent-home`).
 
-1. claude-home을 최신으로 받습니다. 스크립트는 GitHub이 아니라 이 PC의 claude-home 폴더에서 파일을 복사하기 때문입니다.
+1. agent-home을 최신으로 받습니다. 스크립트는 GitHub이 아니라 이 PC의 agent-home 폴더에서 파일을 복사하기 때문입니다.
    ```bash
-   git -C <claude-home 경로> status --short --branch
+   git -C <agent-home 경로> status --short --branch
    ```
    `main`이고 커밋하지 않은 변경이 없으면 받습니다. 다른 브랜치이거나 변경이 있거나 받기에 실패하면, 사용자에게 알리고 그대로 진행할지 묻습니다.
    ```bash
-   git -C <claude-home 경로> pull
+   git -C <agent-home 경로> pull
    ```
 2. 미리보기로 만들 파일을 확인합니다. 아무것도 만들지 않습니다.
    ```bash
    python -I scripts/new_project.py --name <이름> --language <언어> --description "<설명>"
    ```
-3. 사용자에게 위치(기본: claude-home 옆 폴더, 바꾸려면 `--path`)와 파일 목록을 알리고, 같은 명령에 `--apply`를 붙여 만듭니다. 규칙·스킬·검사·훅 스크립트와 훅 설정도 이때 함께 들어가고 `git init -b main`까지 합니다.
+3. 사용자에게 위치(기본: agent-home 옆 폴더, 바꾸려면 `--path`)와 파일 목록을 알리고, 같은 명령에 `--apply`를 붙여 만듭니다. 규칙·스킬·검사·훅 스크립트와 훅 설정도 이때 함께 들어가고 `git init -b main`까지 합니다.
 4. 이후 작업은 새 폴더의 절대 경로에서 합니다.
 
 ## 3. 뼈대 만들기
@@ -55,7 +55,7 @@ claude-home 기준으로 새 프로젝트를 만들고 체계적으로 시작합
 
 - **ADR**: 기술 선택(언어·프레임워크·저장 방식)을 `docs/adr/0001-<제목>.md`로 씁니다. 템플릿은 `docs/adr/template.md`입니다.
 - **README**: 시작하기(설치·실행·테스트 명령)와 구조를 실제 내용으로 채웁니다.
-- **AGENTS.md**: 작업별로 먼저 읽을 문서 표, 명령어의 `<설치>`, `<실행>`, 동작 확인 방법, 구조를 채웁니다. 맨 아래 공통 규칙 부분(`claude-home:common-rules` 표시 사이)은 고치지 않습니다. `CLAUDE.md`는 `@AGENTS.md` 줄을 그대로 둡니다.
+- **AGENTS.md**: 작업별로 먼저 읽을 문서 표, 명령어의 `<설치>`, `<실행>`, 동작 확인 방법, 구조를 채웁니다. 맨 아래 공통 규칙 부분(`agent-home:common-rules` 표시 사이)은 고치지 않습니다. `CLAUDE.md`는 `@AGENTS.md` 줄을 그대로 둡니다.
 - 자리표시(`<...>`)가 남지 않게 합니다. 아직 정할 수 없는 것은 실행 계획의 "결정과 남은 문제"로 옮깁니다.
 
 ## 5. 첫 기능과 검증
@@ -79,7 +79,7 @@ claude-home 기준으로 새 프로젝트를 만들고 체계적으로 시작합
 
 ## 7. 훅 확인
 
-훅은 첫 프로젝트에서 실제로 막는지 확인해야 믿을 수 있습니다(Windows·Codex는 claude-home에서 미리 확인하지 못함). **6단계의 첫 커밋 뒤에** 합니다. 커밋이 하나도 없는 저장소에서는 첫 커밋을 위해 훅이 일부러 허용하므로, 그 전에 확인하면 막히지 않아 잘못 판단하게 됩니다. 확인한 결과는 실행 계획 "검증" 표의 "훅" 행에 적습니다.
+훅은 첫 프로젝트에서 실제로 막는지 확인해야 믿을 수 있습니다(Windows·Codex는 agent-home에서 미리 확인하지 못함). **6단계의 첫 커밋 뒤에** 합니다. 커밋이 하나도 없는 저장소에서는 첫 커밋을 위해 훅이 일부러 허용하므로, 그 전에 확인하면 막히지 않아 잘못 판단하게 됩니다. 확인한 결과는 실행 계획 "검증" 표의 "훅" 행에 적습니다.
 
 1. 이 세션에서 훅 테스트를 돌립니다.
    ```bash
@@ -90,7 +90,7 @@ claude-home 기준으로 새 프로젝트를 만들고 체계적으로 시작합
    git commit --dry-run --allow-empty -m "훅 확인"
    ```
 3. Codex도 쓴다면 새 프로젝트에서 Codex를 열고 `/hooks`로 두 훅을 승인한 뒤 같은 명령으로 확인합니다.
-4. 막히지 않으면 `python`이 PATH에 있는지, 훅 설정이 있는지 확인합니다(claude-home의 `docs/setup.md` "훅" 절과 문제 해결).
+4. 막히지 않으면 `python`이 PATH에 있는지, 훅 설정이 있는지 확인합니다(agent-home의 `docs/setup.md` "훅" 절과 문제 해결).
 
 ## 끝내며
 

@@ -1,4 +1,4 @@
-"""new_project.py 테스트. 실제 claude-home 템플릿으로 임시 폴더에 프로젝트를 만들고,
+"""new_project.py 테스트. 실제 agent-home 템플릿으로 임시 폴더에 프로젝트를 만들고,
 만들어진 프로젝트에서 저장소 검사가 통과하는지 확인합니다. 규칙·템플릿을 고친 뒤 새 프로젝트가 깨지지 않게 하는 안전장치입니다.
 
 실행:  python -I -m unittest discover -s scripts -p "test_*.py"

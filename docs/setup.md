@@ -1,6 +1,6 @@
 # 초기 설정
 
-claude-home을 처음 받아서 로컬 PC와 클라우드 세션에서 쓰기까지의 순서입니다. 처음 한 번만 하면 되고, 다른 PC에서도 같은 순서로 합니다.
+agent-home을 처음 받아서 로컬 PC와 클라우드 세션에서 쓰기까지의 순서입니다. 처음 한 번만 하면 되고, 다른 PC에서도 같은 순서로 합니다.
 
 ## 한눈에 보기
 
@@ -34,10 +34,10 @@ gh auth status
 
 ## 2. 저장소 받기
 
-다른 프로젝트들과 **같은 상위 폴더**에 받습니다. `new-project` 스킬은 claude-home 옆에 새 프로젝트를 만들기 때문입니다.
+다른 프로젝트들과 **같은 상위 폴더**에 받습니다. `new-project` 스킬은 agent-home 옆에 새 프로젝트를 만들기 때문입니다.
 
 ```bash
-gh repo clone mooooonmin/claude-home C:/00.PROJECT/claude-home
+gh repo clone mooooonmin/agent-home C:/00.PROJECT/agent-home
 ```
 
 ## 3. 로컬 PC에 규칙 적용
@@ -45,25 +45,25 @@ gh repo clone mooooonmin/claude-home C:/00.PROJECT/claude-home
 공통 규칙과 스킬을 사용자 설정에 넣으면 이 PC의 **모든 프로젝트**에서 Claude Code와 Codex가 같은 규칙을 따릅니다. 먼저 미리보기로 바뀔 파일을 확인합니다.
 
 ```bash
-python -I C:/00.PROJECT/claude-home/scripts/sync_rules.py --user
+python -I C:/00.PROJECT/agent-home/scripts/sync_rules.py --user
 ```
 
 문제없으면 실제로 반영합니다.
 
 ```bash
-python -I C:/00.PROJECT/claude-home/scripts/sync_rules.py --user --apply
+python -I C:/00.PROJECT/agent-home/scripts/sync_rules.py --user --apply
 ```
 
 | 넣는 것 | 위치 | 효과 |
 |---|---|---|
-| 공통 규칙 (`AGENTS.md`의 표시 사이) | `~/.claude/rules/claude-home.md` | Claude Code: 모든 프로젝트에 적용 |
+| 공통 규칙 (`AGENTS.md`의 표시 사이) | `~/.claude/rules/agent-home.md` | Claude Code: 모든 프로젝트에 적용 |
 | 같은 공통 규칙 | `~/.codex/AGENTS.md`의 같은 표시 사이 | Codex: 모든 프로젝트에 적용. 표시 밖에 적어 둔 내 지시는 그대로 둠 |
 | `.claude/rules/`의 `code.md`, `writing-docs.md`, `lang/`, `translation.md` | `~/.claude/rules/` | Claude Code는 해당 파일을 다룰 때 자동으로, Codex는 공통 규칙의 표를 보고 읽음 |
 | `.agents/skills/` | `~/.agents/skills/`, `~/.claude/skills/` | 어느 프로젝트에서나 `new-project`, `update-docs` 등을 쓸 수 있음 |
 
-- 같은 이름의 파일은 덮어씁니다. 예전 방식의 사본(`~/.claude/rules/basics.md` 등 4개, `~/.claude/commands/`의 같은 이름 명령)은 claude-home에 있던 내용 그대로일 때만 지웁니다. 고쳤거나 이름만 같은 내 파일은 남기고 "확인 필요"로 알려 줍니다. 그 밖의 파일은 건드리지 않습니다.
+- 같은 이름의 파일은 덮어씁니다. 예전 방식의 사본(`~/.claude/rules/basics.md` 등 4개, `~/.claude/commands/`의 같은 이름 명령)은 agent-home에 있던 내용 그대로일 때만 지웁니다. 고쳤거나 이름만 같은 내 파일은 남기고 "확인 필요"로 알려 줍니다. 그 밖의 파일은 건드리지 않습니다.
 - `CLAUDE_CONFIG_DIR`, `CODEX_HOME` 환경 변수를 쓰고 있으면 그 폴더에 넣습니다.
-- claude-home이나 claude-home으로 만든 프로젝트에서는 같은 공통 규칙(약 17KB)이 두 번(사용자 설정 + 저장소) 읽혀 그만큼 컨텍스트를 더 씁니다. 내용이 같아 서로 부딪히지는 않습니다. claude-home으로 만든 프로젝트에서만 일한다면 `--user`는 하지 않아도 됩니다(스킬도 프로젝트에 들어 있음).
+- agent-home이나 agent-home으로 만든 프로젝트에서는 같은 공통 규칙(약 17KB)이 두 번(사용자 설정 + 저장소) 읽혀 그만큼 컨텍스트를 더 씁니다. 내용이 같아 서로 부딪히지는 않습니다. agent-home으로 만든 프로젝트에서만 일한다면 `--user`는 하지 않아도 됩니다(스킬도 프로젝트에 들어 있음).
 - 번역 규칙은 `.md`, `.ipynb` 파일을 다룰 때만 읽히고, 저장소에 `TRANSLATION.md`가 있으면 그쪽이 우선합니다.
 
 ## 4. 설정 확인
@@ -72,13 +72,13 @@ python -I C:/00.PROJECT/claude-home/scripts/sync_rules.py --user --apply
 
 | 확인 | 명령·방법 | 기대 결과 |
 |---|---|---|
-| 규칙 복사 | `ls ~/.claude/rules ~/.claude/skills ~/.agents/skills` | `claude-home.md`, `lang/`, `new-project/` 등이 보임 |
-| Codex 규칙 | `~/.codex/AGENTS.md` 열기 | `claude-home:common-rules` 표시 사이에 공통 규칙이 있음 |
-| 검사·동기화 도구 | claude-home에서 `python -I -m unittest discover -s templates/ci -p "test_*.py"`와 `python -I -m unittest discover -s scripts -p "test_*.py"` | 둘 다 `OK` |
-| 저장소 검사 | claude-home에서 `python -I templates/ci/repo_checks.py --docs-exclude templates` | `문제 0개` |
-| Codex 훅 승인 | claude-home(과 각 프로젝트)에서 Codex를 열고 `/hooks` | 저장소 훅 2개를 승인함 ([훅](#훅)) |
-| 기본 브랜치 보호 (GitHub Pro 이상) | 저장소의 Settings → Rules → Rulesets | `main 보호`가 Active ([GitHub 저장소 규칙](#github-저장소-규칙)) |
-| 새 프로젝트 미리보기 | claude-home에서 `python -I scripts/new_project.py --name test-app --language python` | 만들 파일 목록만 나오고 폴더는 생기지 않음 |
+| 규칙 복사 | `ls ~/.claude/rules ~/.claude/skills ~/.agents/skills` | `agent-home.md`, `lang/`, `new-project/` 등이 보임 |
+| Codex 규칙 | `~/.codex/AGENTS.md` 열기 | `agent-home:common-rules` 표시 사이에 공통 규칙이 있음 |
+| 검사·동기화 도구 | agent-home에서 `python -I -m unittest discover -s templates/ci -p "test_*.py"`와 `python -I -m unittest discover -s scripts -p "test_*.py"` | 둘 다 `OK` |
+| 저장소 검사 | agent-home에서 `python -I templates/ci/repo_checks.py --docs-exclude templates` | `문제 0개` |
+| Codex 훅 승인 | agent-home(과 각 프로젝트)에서 Codex를 열고 `/hooks` | 저장소 훅 2개를 승인함 ([훅](#훅)) |
+| 기본 브랜치 보호 (공개 저장소, 또는 비공개는 GitHub Pro 이상) | 저장소의 Settings → Rules → Rulesets | `main 보호`가 Active ([GitHub 저장소 규칙](#github-저장소-규칙)) |
+| 새 프로젝트 미리보기 | agent-home에서 `python -I scripts/new_project.py --name test-app --language python` | 만들 파일 목록만 나오고 폴더는 생기지 않음 |
 | 규칙 적용 | 아무 프로젝트에서 Claude Code와 Codex를 각각 열고 "지금 적용된 규칙 파일 목록 알려줘"라고 묻기 | Claude Code는 `~/.claude/rules/`, Codex는 `~/.codex/AGENTS.md`가 언급됨 |
 
 ## 5. 클라우드 세션 설정
@@ -89,16 +89,16 @@ python -I C:/00.PROJECT/claude-home/scripts/sync_rules.py --user --apply
 
 ### GitHub 연결 (처음 한 번)
 
-claude-home은 **비공개 저장소**라서 아래 둘 중 하나가 필요합니다. 연결하지 않으면 공개 저장소만 열 수 있습니다.
+agent-home은 공개 저장소라 연결하지 않아도 열 수 있습니다. 비공개 프로젝트를 함께 열거나 PR Auto-fix를 쓰려면 아래 둘 중 하나가 필요합니다.
 
-- **브라우저**: [claude.ai/code](https://claude.ai/code)에 로그인해 GitHub 권한을 승인하고, [Claude GitHub App](https://github.com/apps/claude/installations/new)을 설치하면서 접근할 저장소에 `claude-home`(과 클라우드에서 쓸 프로젝트)을 넣습니다. PR Auto-fix도 이 앱이 있어야 동작합니다.
+- **브라우저**: [claude.ai/code](https://claude.ai/code)에 로그인해 GitHub 권한을 승인하고, [Claude GitHub App](https://github.com/apps/claude/installations/new)을 설치하면서 접근할 저장소에 `agent-home`(과 클라우드에서 쓸 프로젝트)을 넣습니다. PR Auto-fix도 이 앱이 있어야 동작합니다.
 - **터미널**: `gh auth login`이 된 상태에서 Claude Code를 열고 `/login` → `/web-setup`을 실행합니다. `gh`의 권한으로 비공개 저장소에 접근합니다.
 
 ### 환경 (처음 한 번)
 
-입력창 아래 **환경 선택**에서 고릅니다. claude-home 작업은 **기본 환경 그대로** 쓰면 됩니다.
+입력창 아래 **환경 선택**에서 고릅니다. agent-home 작업은 **기본 환경 그대로** 쓰면 됩니다.
 
-| 항목 | claude-home 설정 | 설명 |
+| 항목 | agent-home 설정 | 설명 |
 |---|---|---|
 | Network access | Trusted (기본값) | GitHub, PyPI, npm, Maven 같은 패키지 저장소에 접근 가능 |
 | Setup script | 없음 | Python(pytest, ruff 포함), Node, Java 21, Go, `gh`가 미리 설치되어 있음 |
@@ -112,13 +112,13 @@ Flutter/Dart는 **미리 설치되어 있지 않습니다**. Flutter 프로젝�
 입력창 아래 **저장소 선택**에서 저장소와 브랜치(`main`)를 고르고 할 일을 적습니다. 주소로 바로 열 수도 있습니다.
 
 ```
-https://claude.ai/code?repositories=mooooonmin/claude-home&prompt=/research%20조사할%20주제
+https://claude.ai/code?repositories=mooooonmin/agent-home&prompt=/research%20조사할%20주제
 ```
 
 | 하려는 일 | 고를 저장소 |
 |---|---|
-| 조사·메모 (`/research`, 결과는 `notes/`) | `claude-home` |
-| 규칙·템플릿 고치기, `/update-docs` | `claude-home` |
+| 조사·메모 (`/research`, 결과는 `notes/`) | `agent-home` |
+| 규칙·템플릿 고치기, `/update-docs` | `agent-home` |
 | 특정 프로젝트 작업 | 그 프로젝트 저장소. 공통 규칙이 들어간 `AGENTS.md`와 `@AGENTS.md` 줄이 있는 `CLAUDE.md`가 있어야 규칙이 적용됩니다(`new-project`로 만든 프로젝트에는 이미 있음) |
 
 저장소를 여러 개 함께 넣을 수도 있지만, 그때는 각 저장소의 `.claude/settings.json` 권한 규칙과 훅이 적용되지 않습니다. 보통은 저장소 하나로 엽니다.
@@ -177,9 +177,9 @@ https://claude.ai/code?repositories=mooooonmin/claude-home&prompt=/research%20�
 
 GitHub가 서버에서 기본 브랜치를 보호하게 합니다. 훅과 달리 사람이 직접 실행한 명령이나 다른 도구에도 적용됩니다. 저장소마다 한 번 설정합니다.
 
-먼저 요금제를 확인합니다. 저장소 규칙은 공개 저장소에서는 GitHub Free로도 쓸 수 있지만, **비공개 저장소에서는 GitHub Pro 이상**이 필요합니다(근거: GitHub 문서 원본 [`data/reusables/gated-features/repo-rules.md`](https://github.com/github/docs/blob/main/data/reusables/gated-features/repo-rules.md)). 예전 방식인 보호 브랜치도 조건이 같습니다. claude-home처럼 비공개 저장소인데 Free라면 이 절은 건너뛰고 훅에 맡깁니다. 요금제는 [github.com/settings/billing](https://github.com/settings/billing)에서 확인합니다.
+먼저 요금제를 확인합니다. 저장소 규칙은 공개 저장소에서는 GitHub Free로도 쓸 수 있지만, **비공개 저장소에서는 GitHub Pro 이상**이 필요합니다(근거: GitHub 문서 원본 [`data/reusables/gated-features/repo-rules.md`](https://github.com/github/docs/blob/main/data/reusables/gated-features/repo-rules.md)). 예전 방식인 보호 브랜치도 조건이 같습니다. agent-home은 공개 저장소라 Free로도 설정할 수 있습니다. 비공개 저장소인데 Free라면 이 절은 건너뛰고 훅에 맡깁니다. 요금제는 [github.com/settings/billing](https://github.com/settings/billing)에서 확인합니다.
 
-1. 저장소의 **Settings → Rules → Rulesets**에서 **New ruleset → New branch ruleset**을 누릅니다. claude-home은 [이 주소](https://github.com/mooooonmin/claude-home/settings/rules)입니다. 화면 이름은 바뀔 수 있습니다.
+1. 저장소의 **Settings → Rules → Rulesets**에서 **New ruleset → New branch ruleset**을 누릅니다. agent-home은 [이 주소](https://github.com/mooooonmin/agent-home/settings/rules)입니다. 화면 이름은 바뀔 수 있습니다.
 2. 다음처럼 정하고 저장합니다.
 
    | 항목 | 값 | 이유 |
@@ -200,30 +200,30 @@ GitHub가 서버에서 기본 브랜치를 보호하게 합니다. 훅과 달리
 
 ## 규칙을 고친 뒤
 
-claude-home이 규칙의 원본입니다. 규칙은 항상 여기서 고치고 다른 곳으로 퍼뜨립니다.
+agent-home이 규칙의 원본입니다. 규칙은 항상 여기서 고치고 다른 곳으로 퍼뜨립니다.
 
-1. claude-home에서 작업 브랜치를 만들어 고치고, PR로 `main`에 병합합니다.
+1. agent-home에서 작업 브랜치를 만들어 고치고, PR로 `main`에 병합합니다.
 2. 이 PC에 반영합니다.
    ```bash
-   git -C C:/00.PROJECT/claude-home pull
+   git -C C:/00.PROJECT/agent-home pull
    ```
    ```bash
-   python -I C:/00.PROJECT/claude-home/scripts/sync_rules.py --user --apply
+   python -I C:/00.PROJECT/agent-home/scripts/sync_rules.py --user --apply
    ```
-3. 프로젝트에도 반영합니다. 자동으로 따라가지 않으므로, 프로젝트마다 미리보기로 확인한 뒤 `--apply`로 반영하고 그 저장소에서 커밋합니다. 지난번에 반영한 claude-home 커밋은 프로젝트의 `.claude-home-version`에 있고, 그 뒤 바뀐 내용은 claude-home의 [CHANGELOG](../CHANGELOG.md)나 `git -C C:/00.PROJECT/claude-home log --oneline <커밋>..main`으로 봅니다.
+3. 프로젝트에도 반영합니다. 자동으로 따라가지 않으므로, 프로젝트마다 미리보기로 확인한 뒤 `--apply`로 반영하고 그 저장소에서 커밋합니다. 지난번에 반영한 agent-home 커밋은 프로젝트의 `.agent-home-version`에 있고, 그 뒤 바뀐 내용은 agent-home의 [CHANGELOG](../CHANGELOG.md)나 `git -C C:/00.PROJECT/agent-home log --oneline <커밋>..main`으로 봅니다.
    ```bash
-   python -I C:/00.PROJECT/claude-home/scripts/sync_rules.py --target C:/00.PROJECT/my-app
+   python -I C:/00.PROJECT/agent-home/scripts/sync_rules.py --target C:/00.PROJECT/my-app
    ```
 4. 다른 PC에서는 2번만 하면 됩니다.
 
 ### 원본과 사본
 
 - 프로젝트 `AGENTS.md`의 공통 규칙 부분, `.claude/rules/`, 스킬은 `new-project`나 `sync_rules.py`로 넣은 **사본**이고, 원본과 연결되어 있지 않습니다.
-  - claude-home을 고쳐도 프로젝트는 그대로입니다(위 3번).
-  - 프로젝트에서 고친 규칙은 그 프로젝트에만 적용되고 claude-home은 바뀌지 않습니다. 모든 프로젝트에 적용할 규칙은 claude-home에서 고칩니다.
+  - agent-home을 고쳐도 프로젝트는 그대로입니다(위 3번).
+  - 프로젝트에서 고친 규칙은 그 프로젝트에만 적용되고 agent-home은 바뀌지 않습니다. 모든 프로젝트에 적용할 규칙은 agent-home에서 고칩니다.
   - 프로젝트만의 규칙은 `AGENTS.md`의 공통 규칙 표시 **밖**(위쪽 저장소 안내)에 적습니다. 표시 사이는 다음 동기화 때 원본으로 덮어씁니다.
-- 새 프로젝트를 만들기 전에는 위 2번의 `git pull`을 먼저 합니다. `scripts/new_project.py`는 GitHub이 아니라 이 PC의 claude-home 폴더에서 파일을 복사합니다.
-- 로컬 PC에서는 프로젝트의 규칙과 사용자 설정(`~/.claude/rules/`, `~/.codex/AGENTS.md`)의 원본이 **함께** 읽힙니다. 어느 쪽도 다른 쪽을 덮어쓰지 않고, 둘이 충돌하면 Claude가 어느 쪽을 따를지 정해지지 않습니다([공식 문서: User-level rules](https://code.claude.com/docs/en/memory)). 그래서 프로젝트 규칙은 원본에 **덧붙이는** 내용으로 쓰고, 원본과 반대되는 규칙이 필요하면 claude-home을 고칠지 먼저 검토합니다.
+- 새 프로젝트를 만들기 전에는 위 2번의 `git pull`을 먼저 합니다. `scripts/new_project.py`는 GitHub이 아니라 이 PC의 agent-home 폴더에서 파일을 복사합니다.
+- 로컬 PC에서는 프로젝트의 규칙과 사용자 설정(`~/.claude/rules/`, `~/.codex/AGENTS.md`)의 원본이 **함께** 읽힙니다. 어느 쪽도 다른 쪽을 덮어쓰지 않고, 둘이 충돌하면 Claude가 어느 쪽을 따를지 정해지지 않습니다([공식 문서: User-level rules](https://code.claude.com/docs/en/memory)). 그래서 프로젝트 규칙은 원본에 **덧붙이는** 내용으로 쓰고, 원본과 반대되는 규칙이 필요하면 agent-home을 고칠지 먼저 검토합니다.
 - 클라우드 세션에서는 [세션에 넣은 저장소의 규칙만](#클라우드에서-적용되는-것) 읽힙니다.
 
 ## 문제 해결
@@ -235,11 +235,12 @@ claude-home이 규칙의 원본입니다. 규칙은 항상 여기서 고치고 �
 | `gh` 명령이 권한 오류 | 로그인 안 됨 또는 권한 부족 | `gh auth login`, 비공개 저장소는 `repo` 권한 필요 |
 | 클라우드 세션이 규칙을 안 따름 | 고른 저장소에 규칙이 없거나 `CLAUDE.md`가 `AGENTS.md`를 가져오지 않음 | 그 저장소 `AGENTS.md`에 공통 규칙 표시가 있고 `CLAUDE.md`에 `@AGENTS.md` 줄이 있는지 확인 (`repo_checks.py`가 뒤쪽을 검사) |
 | Codex가 규칙 뒷부분을 모름 | `AGENTS.md`가 Codex 기본 한도(32KiB)를 넘어 잘림 | `repo_checks.py`로 크기를 확인하고 자세한 내용을 담당 문서로 옮김 |
-| 클라우드 저장소 목록에 `claude-home`이 없음 | 비공개 저장소 접근 권한 없음 | Claude GitHub App 설치 시 그 저장소를 포함하거나 `/web-setup` |
+| 클라우드 저장소 목록에 `agent-home`이 없음 | 비공개 저장소 접근 권한 없음 | Claude GitHub App 설치 시 그 저장소를 포함하거나 `/web-setup` |
 | 클라우드에서 `flutter`를 찾을 수 없음 | 미리 설치되어 있지 않음 | 그 프로젝트용 환경의 Setup script에 설치 명령 추가 |
-| Claude Code가 모든 셸 명령을 못 함 (`can't open file … agent_hooks.py`) | 훅 설정은 있는데 훅 스크립트가 없음 | claude-home에서 `sync_rules.py --target <프로젝트> --apply`로 넣거나, 훅 설정을 지움 |
-| 저장소 검사가 `.gitattributes`의 중괄호 패턴(`*.{bat,cmd,ps1}`)을 알림 | 예전 템플릿의 오류. git은 중괄호를 펼치지 않아 그 줄이 아무 파일에도 적용되지 않았음 | claude-home의 `templates/lint/.gitattributes`로 바꾸고 따로 커밋 (저장된 내용은 바뀌지 않음) |
+| Claude Code가 모든 셸 명령을 못 함 (`can't open file … agent_hooks.py`) | 훅 설정은 있는데 훅 스크립트가 없음 | agent-home에서 `sync_rules.py --target <프로젝트> --apply`로 넣거나, 훅 설정을 지움 |
+| 저장소 검사가 `.gitattributes`의 중괄호 패턴(`*.{bat,cmd,ps1}`)을 알림 | 예전 템플릿의 오류. git은 중괄호를 펼치지 않아 그 줄이 아무 파일에도 적용되지 않았음 | agent-home의 `templates/lint/.gitattributes`로 바꾸고 따로 커밋 (저장된 내용은 바뀌지 않음) |
 | 저장소 검사가 커밋 제목을 알림 | 제목이 `type(scope): 설명` 형식이 아니거나 설명이 "수정"뿐임 ([커밋 규칙](../AGENTS.md#커밋)) | 올리기 전이면 `git commit --amend`로 고침. 이미 PR에 올렸으면 그 작업 브랜치에서 `git rebase -i <기준 브랜치>`로 제목을 고친 뒤 `git push --force-with-lease` |
 | Codex에서 훅이 돌지 않음 | 저장소 훅을 아직 승인하지 않았거나 훅 내용이 바뀜 | Codex에서 `/hooks`로 승인 |
 | 규칙을 고쳤는데 로컬에 반영 안 됨 | 동기화를 안 함 | `git pull` 후 `sync_rules.py --user --apply` 다시 실행 |
-| 스킬 사본이 원본과 다르다는 검사 오류 | `.agents/skills/`만 고치고 `.claude/skills/`에 복사하지 않음 | claude-home에서는 `sync_rules.py --mirror --apply`, 프로젝트에서는 원본 파일을 그대로 복사 |
+| 스킬 사본이 원본과 다르다는 검사 오류 | `.agents/skills/`만 고치고 `.claude/skills/`에 복사하지 않음 | agent-home에서는 `sync_rules.py --mirror --apply`, 프로젝트에서는 원본 파일을 그대로 복사 |
+| 예전에 `claude-home`으로 받아 둔 폴더가 있음 | 저장소 이름이 agent-home으로 바뀜 ([0007](adr/0007-rename-to-agent-home.md)) | 폴더 이름을 `agent-home`으로 바꾸고 `git remote set-url origin https://github.com/mooooonmin/agent-home.git`. 그 뒤 `sync_rules.py --user --apply`를 돌리면 옛 표시와 `claude-home.md`가 새 이름으로 바뀜 |

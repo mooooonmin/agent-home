@@ -1,4 +1,4 @@
-# claude-home
+# agent-home
 
 내 공통 규칙·스킬·용어집·템플릿을 모아 둔 저장소입니다. 규칙의 **원본**은 여기 있고, 다른 프로젝트와 사용자 설정(`~/.claude/`, `~/.codex/`)에는 `scripts/sync_rules.py`로 복사해 씁니다.
 
@@ -20,7 +20,7 @@ Codex는 이 파일을 직접 읽고, Claude Code는 `CLAUDE.md`의 `@AGENTS.md`
 ## 이 저장소에서 작업할 때
 
 - 다른 저장소에 속하지 않는 결과물(조사, 초안, 메모)은 `notes/`에 `YYYY-MM-DD-주제.md`로 저장합니다.
-- 공통 규칙은 이 파일의 `claude-home:common-rules` 표시 사이와 `.claude/rules/`에서 고칩니다. 그대로 프로젝트로 복사됩니다. 매 세션 필요한 것만 이 파일에 두고, 특정 파일을 다룰 때만 필요한 것은 `.claude/rules/`의 `paths` 규칙으로 둡니다(Claude Code 권장: 항상 읽히는 파일은 200줄 아래).
+- 공통 규칙은 이 파일의 `agent-home:common-rules` 표시 사이와 `.claude/rules/`에서 고칩니다. 그대로 프로젝트로 복사됩니다. 매 세션 필요한 것만 이 파일에 두고, 특정 파일을 다룰 때만 필요한 것은 `.claude/rules/`의 `paths` 규칙으로 둡니다(Claude Code 권장: 항상 읽히는 파일은 200줄 아래).
 - 규칙을 더하기 전에 근거(실제로 받은 지적이나 실패를 보여 주는 커밋·PR·노트, 또는 참고한 사례의 출처와 이 저장소에서 막으려는 문제)를 확인하고 커밋 본문에 링크합니다. 근거가 없으면 더하지 않습니다. 같은 효과를 검사·스크립트·스킬로 낼 수 있으면 글로 된 규칙보다 그쪽을 택합니다.
 - 스킬은 `.agents/skills/`에서 고친 뒤 `.claude/skills/`로 복사합니다. 두 폴더가 다르면 저장소 검사가 실패합니다.
   ```bash
@@ -40,10 +40,10 @@ Codex는 이 파일을 직접 읽고, Claude Code는 `CLAUDE.md`의 `@AGENTS.md`
   python -I -m unittest discover -s scripts -p "test_*.py"
   ```
 
-<!-- claude-home:common-rules:start -->
+<!-- agent-home:common-rules:start -->
 ## 공통 규칙
 
-여기부터 `claude-home:common-rules:end` 표시까지는 claude-home의 `AGENTS.md`에서 복사한 공통 규칙입니다. 고치려면 claude-home에서 고친 뒤 `scripts/sync_rules.py`로 다시 반영합니다. 이 파일 위쪽의 저장소 안내와 다르면 저장소 안내를 따릅니다.
+여기부터 `agent-home:common-rules:end` 표시까지는 agent-home의 `AGENTS.md`에서 복사한 공통 규칙입니다. 고치려면 agent-home에서 고친 뒤 `scripts/sync_rules.py`로 다시 반영합니다. 이 파일 위쪽의 저장소 안내와 다르면 저장소 안내를 따릅니다.
 
 코드 작성·문서 작성·언어·번역의 자세한 규칙은 따로 있습니다. Claude Code는 Read·Edit·Write로 해당 파일을 열 때 자동으로 읽고, 다른 에이전트는 그 파일을 다루기 전에 직접 읽습니다. 셸 명령으로 파일을 고치거나 의존성을 추가할 때는 자동으로 읽히지 않으므로 먼저 직접 읽습니다. 저장소에 없으면 `~/.claude/rules/` 아래 같은 경로를 봅니다.
 
@@ -143,7 +143,7 @@ Codex는 이 파일을 직접 읽고, Claude Code는 `CLAUDE.md`의 `@AGENTS.md`
 
 ### 자동 점검
 
-- CI에서 깨진 내부 링크·이미지·앵커를 막습니다(`repo_checks.py`에 포함). 템플릿: claude-home의 `templates/ci/`
+- CI에서 깨진 내부 링크·이미지·앵커를 막습니다(`repo_checks.py`에 포함). 템플릿: agent-home의 `templates/ci/`
 - 훅(`scripts/agent_hooks.py`)이 기본 브랜치에 바로 커밋·푸시하는 명령을 막고, 끝내기 전에 저장소 검사를 돌립니다. 훅이 막으면 우회하지 말고 이유를 따르거나 사용자에게 알립니다.
 - 문서가 코드와 어긋났는지는 `update-docs` 스킬로 점검합니다.
 
@@ -161,5 +161,5 @@ Codex는 이 파일을 직접 읽고, Claude Code는 `CLAUDE.md`의 `@AGENTS.md`
 - 기본 브랜치에 바로 커밋하지 말고 작업 브랜치를 만듭니다. 예: `translate/ch09`, `fix/broken-links`
 - PR 본문은 저장소의 `.github/pull_request_template.md`를 따릅니다. 없으면 위 커밋 본문 항목(변경 이유, 변경 내용, 검증, 문서)으로 씁니다.
 - PR을 만들기 전에 대화를 보지 않은 리뷰어로 변경을 검토합니다: Claude Code는 `/code-review`, Codex는 `/review`. 고친 것과 고치지 않은 이유를 PR 본문에 적습니다.
-- 클라우드 세션에서 만든 PR은 내가 직접 확인하고 병합합니다. 자동 병합은 켜지 않습니다.
-<!-- claude-home:common-rules:end -->
+- 모든 변경은 PR로 남깁니다. 로컬·클라우드 어느 세션이든 작업 브랜치를 기본 브랜치에 직접 합치지 않고, PR은 내가 직접 확인하고 병합합니다. 자동 병합은 켜지 않습니다.
+<!-- agent-home:common-rules:end -->
