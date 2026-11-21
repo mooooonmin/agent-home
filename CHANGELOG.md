@@ -19,6 +19,7 @@ agent-home(예전 이름 claude-home)의 주요 변경 사항을 기록합니다
 - GitHub Actions를 Node 24로 도는 주 버전으로 올림: `checkout@v7`, `setup-go@v7`, `setup-java@v6`, `setup-python@v7`, `setup-node@v7`, `golangci-lint-action@v9`. GitHub이 Node 20 실행을 지원 종료함 (`flutter-action@v2`는 composite라 그대로)
 - 공통 규칙의 커밋 절을 48줄에서 15줄로 줄임. 새 프로젝트 `AGENTS.md`가 198~200줄에서 165~167줄로 줄어듦 ([ADR 0006](docs/adr/0006-check-commit-titles-instead-of-long-commit-rules.md))
 - 공통 규칙과 `archive-issue` 스킬에서 업무 저장소 이름 규칙을 빼고 "업무 저장소(회사 계정·조직의 저장소)"로 일반화. 실제 이름은 개인 설정(`~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`의 표시 밖)에 적음 ([초기 설정](docs/setup.md#3-로컬-pc에-규칙-적용))
+- 공통 규칙: PR을 기록용으로 쓰도록, CI가 모두 통과하고 충돌이 없으면 에이전트가 병합. CI 실패, 고치지 않은 리뷰 지적, 직접 보겠다고 한 PR은 병합하지 않고 알림. 자동 병합 설정은 여전히 켜지 않음
 
 ### 수정
 

@@ -141,7 +141,7 @@ https://claude.ai/code?repositories=mooooonmin/agent-home&prompt=/research%20조
 
 1. 작업이 끝나면 Claude가 작업 브랜치를 GitHub에 올립니다.
 2. **Changes** 카드에서 변경 내용을 보고 **Create PR**로 PR을 만듭니다.
-3. PR은 직접 확인하고 병합합니다([커밋과 PR 규칙](../AGENTS.md#커밋과-pr-규칙)).
+3. CI가 통과하고 충돌이 없으면 에이전트가 병합하고, 아니면 이유를 알려 줍니다([커밋과 PR 규칙](../AGENTS.md#커밋과-pr-규칙)). 세션에 병합 권한이 없으면 직접 병합합니다.
 4. 클라우드는 브랜치를 지울 수 없습니다. 병합 후 GitHub에서 지우거나, 저장소 설정의 "Automatically delete head branches"를 켭니다.
 
 로컬과 오가기:
@@ -187,7 +187,7 @@ GitHub가 서버에서 기본 브랜치를 보호하게 합니다. 훅과 달리
    |---|---|---|
    | Ruleset name | `main 보호` | |
    | Enforcement status | Active | |
-   | Bypass list | 비워 둠 | 나도 PR로 병합하므로 예외가 필요 없음 |
+   | Bypass list | 비워 둠 | 사람도 에이전트도 PR로 병합하므로 예외가 필요 없음 |
    | Target branches | Add target → Include default branch | 기본 브랜치(`main`) |
    | Restrict deletions | 켬 | 기본 브랜치 삭제 방지 |
    | Block force pushes | 켬 | 기록 덮어쓰기 방지 |

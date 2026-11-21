@@ -161,5 +161,6 @@ Codex는 이 파일을 직접 읽고, Claude Code는 `CLAUDE.md`의 `@AGENTS.md`
 - 기본 브랜치에 바로 커밋하지 말고 작업 브랜치를 만듭니다. 예: `translate/ch09`, `fix/broken-links`
 - PR 본문은 저장소의 `.github/pull_request_template.md`를 따릅니다. 없으면 위 커밋 본문 항목(변경 이유, 변경 내용, 검증, 문서)으로 씁니다.
 - PR을 만들기 전에 대화를 보지 않은 리뷰어로 변경을 검토합니다: Claude Code는 `/code-review`, Codex는 `/review`. 고친 것과 고치지 않은 이유를 PR 본문에 적습니다.
-- 모든 변경은 PR로 남깁니다. 로컬·클라우드 어느 세션이든 작업 브랜치를 기본 브랜치에 직접 합치지 않고, PR은 내가 직접 확인하고 병합합니다. 자동 병합은 켜지 않습니다.
+- 모든 변경은 기록을 위해 PR로 남깁니다. 로컬·클라우드 어느 세션이든 작업 브랜치를 기본 브랜치에 직접 합치지 않습니다.
+- PR의 CI가 모두 통과하고 충돌이 없으면 에이전트가 병합합니다(`gh pr merge <번호> --merge --delete-branch`). CI가 실패했거나, 리뷰에서 고치지 않은 지적이 있거나, 내가 직접 보겠다고 한 PR은 병합하지 않고 알립니다. 자동 병합 설정은 켜지 않습니다.
 <!-- agent-home:common-rules:end -->
