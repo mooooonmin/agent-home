@@ -9,6 +9,7 @@ agent-home(예전 이름 claude-home)의 주요 변경 사항을 기록합니다
 - `repo_checks.py`: 커밋 제목이 `type(scope): 설명` 형식인지 검사. 기본은 아직 올리지 않은 커밋, CI는 PR의 커밋 ([ADR 0006](docs/adr/0006-check-commit-titles-instead-of-long-commit-rules.md))
 - 셸 명령 전 훅: 명령에 적힌 커밋 제목(`git commit -m "..."`)과 `git push`로 올릴 커밋의 제목을 검사
 - `test_new_project.py`: 새 프로젝트 `AGENTS.md`가 180줄을 넘으면 실패 (저장소 안내를 채울 여유 20줄)
+- `archive-issue` 스킬: 대화에서 해결한 문제를 Issue_archive에 메모 이슈로 기록. 중복 확인, 공개 전 비밀값·업무 정보 점검, 확인받은 뒤 등록 (사용자 설정에만 설치)
 
 ### 변경
 
